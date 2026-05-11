@@ -26,7 +26,16 @@ class App:
         self.show_main()
 
     def _config(self):
-        self.root.title("CNPJ")
+        self.root.title("Certidões")
+        
+        if hasattr(sys, '_MEIPASS'):
+            ico_path = os.path.join(sys._MEIPASS, "iconBy814anonimo.ico")
+        else:
+            ico_path = "./iconBy814anonimo.ico"
+
+        if os.path.exists(ico_path):
+            self.root.iconbitmap(ico_path)
+            
         self.root.configure(bg="#0f1115")
         self.root.resizable(False, False)
 
