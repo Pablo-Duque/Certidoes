@@ -129,7 +129,7 @@ class Bot:
                 
                 if situation == "Válida":
                     valid_found = True
-                    if "positiva".lower() in status.lower():
+                    if "negativa".lower() in status.lower():
                         self.result["cnd"] = (status, "#00ff37")
                     else:
                         self.result["cnd"] = (status, "#FC1B1B")
