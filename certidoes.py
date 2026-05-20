@@ -118,7 +118,9 @@ class Bot:
             if self.page.locator(".br-message .description").count():
                 error = self.page.locator(".br-message .description").inner_text()
                 self.result["cnd"] = (error, "#FC1B1B")
+                return
 
+            self.page.wait_for_locator("datatable-body-row")
             rows = self.page.locator("datatable-body-row")
             valid_found = False
 
@@ -163,7 +165,6 @@ class Bot:
             
             self.page.wait_for_load_state("domcontentloaded")
             if self.page.locator(".feedback-text").count():
-                self.page.wait_for_selector(".feedback-text")
                 status = self.page.locator(".feedback-text").inner_text()
                 if "está regular".lower() in status.lower():
                     self.result["fgts"] = ("Regular", "#00ff37")
@@ -174,7 +175,7 @@ class Bot:
                 self.page.wait_for_selector("input:has-text('Visualizar')")
                 view = self.page.locator("input:has-text('Visualizar')")
                 self.moveMouse(view)
-                sleep(1.5)
+                self.page.wait_for_load_state("domcontentloaded")
                 image_bytes = self.page.screenshot(full_page=True)
                 image = Image.open(io.BytesIO(image_bytes))
 
