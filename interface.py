@@ -1,4 +1,6 @@
 import tkinter as tk
+import os
+import sys
 from tkinter import ttk
 from threading import Thread
 from certidoes import Bot
@@ -8,10 +10,14 @@ class App:
     def __init__(self, root):
         self.root = root
 
+        self.keys = ["cadastro", "simples", "cnd", "fgts", "cndt"]
+
         self.labels = {
+            "cadastro": "Situação Cadastral",
             "simples": "Simples",
             "cnd": "CND",
-            "fgts": "FGTS"
+            "fgts": "FGTS",
+            "cndt": "CNDT"
         }
         
         self._config()
@@ -27,15 +33,13 @@ class App:
 
     def _config(self):
         self.root.title("Certidões")
-        
         if hasattr(sys, '_MEIPASS'):
             ico_path = os.path.join(sys._MEIPASS, "iconBy814anonimo.ico")
         else:
             ico_path = "./iconBy814anonimo.ico"
-
         if os.path.exists(ico_path):
             self.root.iconbitmap(ico_path)
-            
+
         self.root.configure(bg="#0f1115")
         self.root.resizable(False, False)
 
@@ -112,7 +116,7 @@ class App:
 
         self.result_labels = {}
 
-        for key in ["simples", "cnd", "fgts"]:
+        for key in self.keys:
             lbl = tk.Label(
                 self.main,
                 text=f"{self.labels[key]}: Aguardando...",
@@ -120,7 +124,7 @@ class App:
                 bg="#0f1115",
                 font=("Segoe UI", 10)
             )
-            lbl.pack(pady=(30, 0))
+            lbl.pack(pady=(15, 0))
 
             self.result_labels[key] = lbl
 
@@ -151,7 +155,7 @@ class App:
         Thread(target=self.run_bot, args=(cnpj,), daemon=True).start()
 
     def run_bot(self, cnpj):
-        bot = Bot(cnpj)
+        bot = Bot(cnpj, self.keys)
         result = bot.search()
         self.root.after(0, lambda: self.finish(result))
 
