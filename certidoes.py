@@ -58,6 +58,25 @@ class Bot:
             box.type(letter, delay=random.uniform(100, 280))
         sleep(random.uniform(0.2, 0.7))
 
+    def download(self, box, name, path=None):
+        if not path:
+            path = self.path
+        with self.page.expect_download() as download_info:
+            self.moveMouse(box, 2)
+            download = download_info.value
+            download.save_as(f"{path}/{name}.pdf")
+
+    def printScreen(self, name, path=None):
+        if not path:
+            path = self.path
+        self.page.wait_for_load_state("domcontentloaded")
+        image_bytes = self.page.screenshot(full_page=True)
+        image = Image.open(io.BytesIO(image_bytes))
+        if image.mode in ("RGBA", "P"):
+            image = image.convert("RGB")
+        image.save(str(self.path / f"{name}.pdf"), "PDF", resolution=100.0)
+        image = image.convert("RGB")
+
     def simples(self):
         try:
             self.page.goto("https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21") 
@@ -90,10 +109,7 @@ class Bot:
             name = frame.locator(".panel-body .spanValorVerde").nth(1).inner_text()
             name = re.sub(r'[\\/*?:"<>|]', "", name).strip()
             self.path = self.path / name
-            with self.page.expect_download() as download_info:
-                self.moveMouse(btnPDF, 5)
-                download = download_info.value
-                download.save_as(f"{self.path}/Simples.pdf")
+            self.download(btnPDF, "Simples")
 
         except Exception:
             self.result["simples"] = ("Erro no software", "#FC1B1B")
@@ -137,10 +153,7 @@ class Bot:
                         self.result["cnd"] = (status, "#FC1B1B")
 
                     secondCopy = row.locator("button:has(i.fa-download)")
-                    with self.page.expect_download() as download_info:
-                                self.moveMouse(secondCopy, 2)
-                                download = download_info.value
-                                download.save_as(f"{self.path}/CND.pdf")
+                    self.download(secondCopy, "CND")
                     break
             if not valid_found:
                 self.result["cnd"] = ("Nenhuma certidão válida encontrada", "#FC1B1B")
@@ -175,13 +188,8 @@ class Bot:
                 self.page.wait_for_selector("input:has-text('Visualizar')")
                 view = self.page.locator("input:has-text('Visualizar')")
                 self.moveMouse(view)
-                self.page.wait_for_load_state("domcontentloaded")
-                image_bytes = self.page.screenshot(full_page=True)
-                image = Image.open(io.BytesIO(image_bytes))
+                self.printScreen("FGTS")
 
-                if image.mode in ("RGBA", "P"):
-                    image = image.convert("RGB")
-                image.save(str(self.path / "FGTS.pdf"), "PDF", resolution=100.0)
             else:
                 self.result["fgts"] = ("Não encontrado", "#FC1B1B")
 
