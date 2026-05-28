@@ -86,35 +86,38 @@ class Bot:
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
     def cadastro(self):
-        self.page.goto("https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/") 
-        self.page.wait_for_selector("iframe")
-        frame = self.page.frame_locator("iframe").nth(0)
-        input_cnpj = self.page.locator("input[type='text']")
-        self.moveMouse(input_cnpj, 20)
-        self.type(input_cnpj)
-        checkbox = frame.locator("#checkbox")
-        self.moveMouse(checkbox, 20)
-        consulte = self.page.locator("button:has-text('Consultar')")
-        self.moveMouse(consulte, 10)
-
-        name = self.page.locator("div.section-title:has-text('NOME EMPRESARIAL') + div.section-data").first.inner_text().strip()
-        name = re.sub(r'[\\/*?:"<>|]', "", name)
-        self.path = self.path / name
-
-        status = self.page.locator("div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
-        if status.lower() != "ativa":
-            motive = self.page.locator("div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
-            self.result["cadastro"] = (f"{status} - {motive}" if motive else status, "#FC1B1B")
-            self.proceed = False
-        else:
-            self.result["cadastro"] = (status, "#00ff37")
-
-        print = self.page.locator("button:has-text('Imprimir')")
-        with self.page.context.expect_page() as popup_info:
-            self.moveMouse(print, 10)
-            popup = popup_info.value
-            popup.wait_for_load_state()
-            self.printScreen("Cadastro", page=popup)
+        try:
+            self.page.goto("https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/") 
+            self.page.wait_for_selector("iframe")
+            frame = self.page.frame_locator("iframe").nth(0)
+            input_cnpj = self.page.locator("input[type='text']")
+            self.moveMouse(input_cnpj, 20)
+            self.type(input_cnpj)
+            checkbox = frame.locator("#checkbox")
+            self.moveMouse(checkbox, 20)
+            consulte = self.page.locator("button:has-text('Consultar')")
+            self.moveMouse(consulte, 10)
+    
+            name = self.page.locator("div.section-title:has-text('NOME EMPRESARIAL') + div.section-data").first.inner_text().strip()
+            name = re.sub(r'[\\/*?:"<>|]', "", name)
+            self.path = self.path / name
+    
+            status = self.page.locator("div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
+            if status.lower() != "ativa":
+                motive = self.page.locator("div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
+                self.result["cadastro"] = (f"{status} - {motive}" if motive else status, "#FC1B1B")
+                self.proceed = False
+                print = self.page.locator("button:has-text('Imprimir')")
+                with self.page.context.expect_page() as popup_info:
+                    self.moveMouse(print, 10)
+                    popup = popup_info.value
+                    popup.wait_for_load_state()
+                    self.printScreen("Cadastro", page=popup)
+            else:
+                self.result["cadastro"] = (status, "#00ff37")
+                
+        except Exception:
+            self.result["simples"] = ("Erro no software", "#FC1B1B")
 
     def simples(self):
         try:
