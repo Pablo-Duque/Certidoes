@@ -1,6 +1,11 @@
-import random
-import re
 import io
+import re
+import random
+import base64
+import cv2
+import numpy as np
+import ddddocr
+
 from PIL import Image
 from pathlib import Path
 from camoufox.sync_api import Camoufox
@@ -56,8 +61,11 @@ class Bot:
             box.click()
             sleep(random.uniform(0.4, 0.7))
 
-    def type(self, box):
-        for letter in self.cnpj:
+    def type(self, box, text=None):
+        if text is None:
+            text = self.cnpj
+
+        for letter in text:
             box.type(letter, delay=random.uniform(100, 265))
         sleep(random.uniform(0.2, 0.7))
 
@@ -85,6 +93,29 @@ class Bot:
             image = image.convert("RGB")
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
+    def solveCaptcha(self, id, attempt, page=None):
+        if page is None:
+            page = self.page
+
+        self.page.wait_for_selector(f"{id}[src]")
+        code = self.page.get_attribute(id, "src").split(",")[1].strip()
+        bytes = base64.b64decode(code)
+ 
+        nparr = np.frombuffer(bytes, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.medianBlur(gray, 5)
+        _, thresh = cv2.threshold(blur, 220, 255, cv2.THRESH_BINARY)
+        kernel = np.ones((2, 2), np.uint8)
+        image_final = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, kernel)
+
+        _, img_encoded = cv2.imencode('.png', image_final)
+        ocr = ddddocr.DdddOcr(show_ad=False)
+        bytes = img_encoded.tobytes()
+        result = ocr.classification(bytes)
+
+        return result
+
     def cadastro(self):
         try:
             self.page.goto("https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/") 
@@ -97,11 +128,11 @@ class Bot:
             self.moveMouse(checkbox, 20)
             consulte = self.page.locator("button:has-text('Consultar')")
             self.moveMouse(consulte, 10)
-    
+
             name = self.page.locator("div.section-title:has-text('NOME EMPRESARIAL') + div.section-data").first.inner_text().strip()
             name = re.sub(r'[\\/*?:"<>|]', "", name)
             self.path = self.path / name
-    
+
             status = self.page.locator("div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
             if status.lower() != "ativa":
                 motive = self.page.locator("div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
@@ -115,9 +146,9 @@ class Bot:
                     self.printScreen("Cadastro", page=popup)
             else:
                 self.result["cadastro"] = (status, "#00ff37")
-                
+
         except Exception:
-            self.result["simples"] = ("Erro no software", "#FC1B1B")
+            self.result["cadastro"] = ("Erro no software", "#FC1B1B")
 
     def simples(self):
         try:
@@ -231,8 +262,12 @@ class Bot:
         except Exception:
             self.result["fgts"] = ("Erro no software", "#FC1B1B")
 
-    def cndt(self):
+    def cndt(self, attempt = 0):
         try:
+            if attempt == 6:
+                self.result["cndt"] = ("Não passou o captcha", "#FC1B1B")
+                return
+
             self.page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
             self.page.wait_for_selector("input[value='Emitir Certidão']")
             issue1 = self.page.locator("input[value='Emitir Certidão']")
@@ -242,20 +277,28 @@ class Bot:
             self.moveMouse(input_cnpj, 15)
             self.type(input_cnpj)
 
-            sleep(10) #substituir pela API de resolução captcha
+            captcha_result = self.solveCaptcha("#idImgBase64", attempt)
+            input_captcha = self.page.locator("#idCampoResposta")
+            self.moveMouse(input_captcha, 15)
+            self.type(input_captcha, captcha_result)
 
             self.page.wait_for_selector("input[value='Emitir Certidão']")
             issue2 = self.page.locator("input[value='Emitir Certidão']")
             self.moveMouse(issue2, 5)
 
-            self.download(issue2, "CNDT")
-            reader = PdfReader(self.path / "CNDT.pdf")
-            pdf = reader.pages[0]
-            title = pdf.extract_text().splitlines()[0].strip().capitalize()
-            if "negativa" in title.lower():
-                self.result["cndt"] = (title, "#00ff37")
+            self.page.wait_for_load_state("domcontentloaded")
+            if(self.page.locator("#mensagens").count()):
+                if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
+                    self.cndt(attempt + 1)
             else:
-                self.result["cndt"] = (title, "#FC1B1B")
+                self.download(issue2, "CNDT")
+                reader = PdfReader(self.path / "CNDT.pdf")
+                pdf = reader.pages[0]
+                title = pdf.extract_text().splitlines()[0].strip().capitalize()
+                if "negativa" in title.lower():
+                    self.result["cndt"] = (title, "#00ff37")
+                else:
+                    self.result["cndt"] = (title, "#FC1B1B")
     
         except Exception:
             self.result["cndt"] = ("Erro no software", "#FC1B1B")
@@ -285,7 +328,7 @@ class Bot:
                 self.simples()
                 self.cnd()
                 self.fgts()
-                # self.cndt() Ate resolver a questao do captcha
+                self.cndt()
             else:
                 for key in self.keys:
                     self.result[key] = ("Situação cadastral diferente de ativa", "#FFFFFF")
