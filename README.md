@@ -1,3 +1,3 @@
 # Certidões
 
-Software que pesquisa o Simples Nacional, Certidão Negativa de Débitos e Regularidade do Empregador perante o FGTS através de seu CNPJ.
+Software que pesquisa diversas certidões de regularidade da empresa através de seu CNPJ.
