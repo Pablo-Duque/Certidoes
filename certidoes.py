@@ -244,22 +244,24 @@ class Bot:
             self.moveMouse(consulte, 10)
             
             self.page.wait_for_load_state("domcontentloaded")
-            if self.page.locator(".feedback-text").filter(has_not_text="não encontrado").count():
+            if self.page.locator(".feedback-text").count():
                 self.page.wait_for_selector(".feedback-text")
                 status = self.page.locator(".feedback-text").inner_text()
-                if "está regular" in status.lower():
+                if "não encontrado" in status.lower():
+                    self.result["fgts"] = ("Não encontrado", "#FC1B1B")
+                elif "informações disponíveis não são suficientes" in status.lower():
+                    self.result["fgts"] = ("Informações insuficientes", "#FC1B1B")
+                elif "está regular" in status.lower():
                     self.result["fgts"] = ("Regular", "#00ff37")
+                    link = self.page.locator("a[name='mainForm:j_id51']")
+                    self.moveMouse(link, 3)
+                    self.page.wait_for_selector("input:has-text('Visualizar')")
+                    view = self.page.locator("input:has-text('Visualizar')")
+                    self.moveMouse(view)
+                    self.page.wait_for_load_state("domcontentloaded")
+                    self.printScreen("FGTS")
                 else:
                     self.result["fgts"] = ("Irregular", "#FC1B1B")
-                link = self.page.locator("a[name='mainForm:j_id51']")
-                self.moveMouse(link, 3)
-                self.page.wait_for_selector("input:has-text('Visualizar')")
-                view = self.page.locator("input:has-text('Visualizar')")
-                self.moveMouse(view)
-                self.page.wait_for_load_state("domcontentloaded")
-                self.printScreen("FGTS")
-            else:
-                self.result["fgts"] = ("Não encontrado", "#FC1B1B")
 
         except Exception:
             self.result["fgts"] = ("Erro no software", "#FC1B1B")
