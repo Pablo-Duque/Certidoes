@@ -72,7 +72,6 @@ class Bot:
     def download(self, download_btn, name, path=None):
         if path is None:
             path = self.path
-
         path.mkdir(parents=True, exist_ok=True)
         with self.page.expect_download() as download_info:
                     self.moveMouse(download_btn, 2)
@@ -93,7 +92,7 @@ class Bot:
             image = image.convert("RGB")
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
-    def solveCaptcha(self, id, attempt, page=None):
+    def solveCaptcha(self, id, page=None):
         if page is None:
             page = self.page
 
@@ -202,7 +201,7 @@ class Bot:
                 self.result["cnd"] = (error, "#FC1B1B")
                 return
                 
-            self.page.wait_for_locator("datatable-body-row")
+            self.page.wait_for_selector("datatable-body-row")
             rows = self.page.locator("datatable-body-row")
             valid_found = False
 
@@ -286,7 +285,6 @@ class Bot:
             issue2 = self.page.locator("input[value='Emitir Certidão']")
             self.moveMouse(issue2, 5)
 
-            self.page.wait_for_load_state("domcontentloaded")
             if(self.page.locator("#mensagens").count()):
                 if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
                     self.cndt(attempt + 1)
