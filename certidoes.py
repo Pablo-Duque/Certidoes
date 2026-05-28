@@ -72,11 +72,14 @@ class Bot:
     def download(self, download_btn, name, path=None):
         if path is None:
             path = self.path
-        path.mkdir(parents=True, exist_ok=True)
-        with self.page.expect_download() as download_info:
-                    self.moveMouse(download_btn, 2)
-                    download = download_info.value
-                    download.save_as(f"{path}/{name}.pdf")
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            with self.page.expect_download(timeout=1500) as download_info:
+                self.moveMouse(download_btn, 2)
+                download = download_info.value
+                download.save_as(f"{path}/{name}.pdf")
+        except Exception:
+            return
 
     def printScreen(self, name, path=None, page=None):
         if path is None:
@@ -280,16 +283,17 @@ class Bot:
             input_captcha = self.page.locator("#idCampoResposta")
             self.moveMouse(input_captcha, 15)
             self.type(input_captcha, captcha_result)
-
+            
             self.page.wait_for_selector("input[value='Emitir Certidão']")
             issue2 = self.page.locator("input[value='Emitir Certidão']")
-            self.moveMouse(issue2, 5)
 
+            self.download(issue2, "CNDT")
             if(self.page.locator("#mensagens").count()):
                 if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
                     self.cndt(attempt + 1)
-            else:
-                self.download(issue2, "CNDT")
+            
+            path_test = self.path / "CNDT.pdf"
+            if path_test.exists():
                 reader = PdfReader(self.path / "CNDT.pdf")
                 pdf = reader.pages[0]
                 title = pdf.extract_text().splitlines()[0].strip().capitalize()
