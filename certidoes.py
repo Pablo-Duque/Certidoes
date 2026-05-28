@@ -288,9 +288,6 @@ class Bot:
             issue2 = self.page.locator("input[value='Emitir Certidão']")
 
             self.download(issue2, "CNDT")
-            if(self.page.locator("#mensagens").count()):
-                if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
-                    self.cndt(attempt + 1)
             
             path_test = self.path / "CNDT.pdf"
             if path_test.exists():
@@ -301,6 +298,12 @@ class Bot:
                     self.result["cndt"] = (title, "#00ff37")
                 else:
                     self.result["cndt"] = (title, "#FC1B1B")
+            else:
+                if(self.page.locator("#mensagens").count()):
+                    if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
+                        self.cndt(attempt + 1)
+                else:
+                    self.result["cndt"] = ("Erro no download", "#FC1B1B")
     
         except Exception:
             self.result["cndt"] = ("Erro no software", "#FC1B1B")
