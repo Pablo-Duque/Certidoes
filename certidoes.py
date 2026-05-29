@@ -22,9 +22,9 @@ class Bot:
             self.result = {key: None}
 
         self.date = datetime.now().strftime("%Y/%m/%d")
-        self.path = Path.home() / "Downloads" / "Certidoes" / self.date
+        self.path = Path.home() / "Downloads" / "Certidoes" #/ self.date
         self.page = None
-
+        self.uf = None
         self.proceed = True
 
     def validateCNPJ(self, cnpj):
@@ -135,6 +135,8 @@ class Bot:
             name = re.sub(r'[\\/*?:"<>|]', "", name)
             self.path = self.path / name
 
+            uf = self.page.locator("div.section-title:has-text('UF') + div.section-data").first.inner_text().strip()
+            self.uf = uf
             status = self.page.locator("div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
             if status.lower() != "ativa":
                 motive = self.page.locator("div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
@@ -180,6 +182,7 @@ class Bot:
             self.download(pdf_btn, "Simples")
 
         except Exception:
+            self.printScreen("Erro simples")
             self.result["simples"] = ("Erro no software", "#FC1B1B")
 
     def cnd(self):
@@ -227,6 +230,7 @@ class Bot:
                 self.result["cnd"] = ("Nenhuma certidão válida encontrada", "#FC1B1B")
 
         except Exception:
+            self.printScreen("Erro cnd")
             self.result["cnd"] = ("Erro no software", "#FC1B1B")
 
     def fgts(self):
@@ -239,31 +243,32 @@ class Bot:
 
             uf = self.page.locator('#mainForm\\:uf')
             self.moveMouse(uf)
-            uf.select_option('SP')
+            uf.select_option(self.uf)
             consulte = self.page.locator("input[value='Consultar']")
             self.moveMouse(consulte, 10)
             
             self.page.wait_for_load_state("domcontentloaded")
-            if self.page.locator(".feedback-text").count():
-                self.page.wait_for_selector(".feedback-text")
-                status = self.page.locator(".feedback-text").inner_text()
-                if "não encontrado" in status.lower():
-                    self.result["fgts"] = ("Não encontrado", "#FC1B1B")
-                elif "informações disponíveis não são suficientes" in status.lower():
-                    self.result["fgts"] = ("Informações insuficientes", "#FC1B1B")
-                elif "está regular" in status.lower():
-                    self.result["fgts"] = ("Regular", "#00ff37")
-                    link = self.page.locator("a[name='mainForm:j_id51']")
-                    self.moveMouse(link, 3)
-                    self.page.wait_for_selector("input:has-text('Visualizar')")
-                    view = self.page.locator("input:has-text('Visualizar')")
-                    self.moveMouse(view)
-                    self.page.wait_for_load_state("domcontentloaded")
-                    self.printScreen("FGTS")
-                else:
-                    self.result["fgts"] = ("Irregular", "#FC1B1B")
+            # if self.page.locator(".feedback-text").count():
+            self.page.wait_for_selector(".feedback-text")
+            status = self.page.locator(".feedback-text").inner_text()
+            if "não encontrado" in status.lower():
+                self.result["fgts"] = ("Não encontrado", "#FC1B1B")
+            elif "informações disponíveis não são suficientes" in status.lower():
+                self.result["fgts"] = ("Informações insuficientes", "#FC1B1B")
+            elif "está regular" in status.lower():
+                self.result["fgts"] = ("Regular", "#00ff37")
+                link = self.page.locator("a[name='mainForm:j_id51']")
+                self.moveMouse(link, 3)
+                self.page.wait_for_selector("input:has-text('Visualizar')")
+                view = self.page.locator("input:has-text('Visualizar')")
+                self.moveMouse(view)
+                self.page.wait_for_selector("input:has-text('Imprimir')")
+                self.printScreen("FGTS")
+            else:
+                self.result["fgts"] = ("Irregular", "#FC1B1B")
 
         except Exception:
+            self.printScreen("Erro fgts")
             self.result["fgts"] = ("Erro no software", "#FC1B1B")
 
     def cndt(self, attempt = 0):
@@ -305,6 +310,7 @@ class Bot:
                     if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
                         self.cndt(attempt + 1)
                 else:
+                    self.printScreen("Erro cndt")
                     self.result["cndt"] = ("Erro no download", "#FC1B1B")
     
         except Exception:
