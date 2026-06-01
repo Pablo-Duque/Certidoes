@@ -1,16 +1,16 @@
-import io
-import re
-import random
 import base64
-import cv2
-import numpy as np
-import ddddocr
-
-from PIL import Image
-from pathlib import Path
-from camoufox.sync_api import Camoufox
-from time import sleep
+import io
+import random
+import re
 from datetime import datetime
+from pathlib import Path
+from time import sleep
+
+import cv2
+import ddddocr
+import numpy as np
+from camoufox.sync_api import Camoufox
+from PIL import Image
 from pypdf import PdfReader
 
 
