@@ -1,8 +1,10 @@
 import os
 import sys
-import tkinter as tk
 from threading import Thread
+
+import tkinter as tk
 from tkinter import ttk
+
 from certidoes import Bot
 
 
