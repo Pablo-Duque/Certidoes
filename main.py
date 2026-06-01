@@ -1,5 +1,7 @@
 import tkinter as tk
+
 from interface import App
+
 
 def main():
     root = tk.Tk()
