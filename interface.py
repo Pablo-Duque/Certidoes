@@ -1,8 +1,9 @@
-import tkinter as tk
 import os
 import sys
-from tkinter import ttk
+import tkinter as tk
+
 from threading import Thread
+from tkinter import ttk
 from certidoes import Bot
 
 
@@ -17,9 +18,9 @@ class App:
             "simples": "Simples",
             "cnd": "CND",
             "fgts": "FGTS",
-            "cndt": "CNDT"
+            "cndt": "CNDT",
         }
-        
+
         self._config()
         self._center(600, 400)
 
@@ -33,7 +34,7 @@ class App:
 
     def _config(self):
         self.root.title("Certidões")
-        if hasattr(sys, '_MEIPASS'):
+        if hasattr(sys, "_MEIPASS"):
             ico_path = os.path.join(sys._MEIPASS, "iconBy814anonimo.ico")
         else:
             ico_path = "./iconBy814anonimo.ico"
@@ -92,7 +93,7 @@ class App:
             text="CNPJ",
             fg="white",
             bg="#0f1115",
-            font=("Segoe UI", 16, "bold")
+            font=("Segoe UI", 16, "bold"),
         ).pack(pady=(20, 10))
 
         self.cnpj_var = tk.StringVar()
@@ -110,7 +111,7 @@ class App:
             self.main,
             text="Gerar Certidões",
             command=self.start_process,
-            style="Blue.TButton"
+            style="Blue.TButton",
         )
         self.btn.pack(pady=15)
 
@@ -122,7 +123,7 @@ class App:
                 text=f"{self.labels[key]}: Aguardando...",
                 fg="#ffffff",
                 bg="#0f1115",
-                font=("Segoe UI", 10)
+                font=("Segoe UI", 10),
             )
             lbl.pack(pady=(15, 0))
 
@@ -136,7 +137,7 @@ class App:
             text="Gerando certidões...",
             fg="white",
             bg="#0f1115",
-            font=("Segoe UI", 12)
+            font=("Segoe UI", 12),
         ).pack(pady=60)
 
     def show_main(self):
@@ -162,10 +163,10 @@ class App:
     def set_result(self, key, text, color):
         if key in self.result_labels:
             self.result_labels[key].config(text=text, fg=color)
-        
+
     def apply_result(self, result):
-        for chave, (texto, cor) in result.items():
-            self.set_result(chave, f"{self.labels[chave]}: {texto}", cor)
+        for key, (text, color) in result.items():
+            self.set_result(key, f"{self.labels[key]}: {text}", color)
 
     def finish(self, result):
         self.apply_result(result)

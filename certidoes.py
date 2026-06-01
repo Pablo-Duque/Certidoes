@@ -13,6 +13,7 @@ from time import sleep
 from datetime import datetime
 from pypdf import PdfReader
 
+
 class Bot:
     def __init__(self, cnpj, keys):
 
@@ -22,29 +23,29 @@ class Bot:
             self.result = {key: None}
 
         self.date = datetime.now().strftime("%Y/%m/%d")
-        self.path = Path.home() / "Downloads" / "Certidoes" #/ self.date
+        self.path = Path.home() / "Downloads" / "Certidoes"  # / self.date
         self.page = None
         self.uf = None
         self.proceed = True
 
-    def validateCNPJ(self, cnpj):
+    def validate_cnpj(self, cnpj):
         if len(cnpj) != 14 or len(set(cnpj)) == 1:
             return False
 
-        def calculateDigit(slice_data, weights):
+        def calculate_digit(slice_data, weights):
             total = sum(int(num) * weight for num, weight in zip(slice_data, weights))
             remainder = total % 11
-            return '0' if remainder < 2 else str(11 - remainder)
+            return "0" if remainder < 2 else str(11 - remainder)
 
         weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
         weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
 
-        digit1 = calculateDigit(cnpj[:12], weights1)
-        digit2 = calculateDigit(cnpj[:13], weights2)
+        digit1 = calculate_digit(cnpj[:12], weights1)
+        digit2 = calculate_digit(cnpj[:13], weights2)
 
         return cnpj[-2:] == (digit1 + digit2)
 
-    def moveMouse(self, box, margin=10):
+    def move_mouse(self, box, margin=10):
         bounding = box.bounding_box()
         if bounding:
             margin = min(margin, bounding["width"] / 3, bounding["height"] / 3)
@@ -75,13 +76,13 @@ class Bot:
         try:
             path.mkdir(parents=True, exist_ok=True)
             with self.page.expect_download(timeout=1500) as download_info:
-                self.moveMouse(download_btn, 2)
+                self.move_mouse(download_btn, 2)
                 download = download_info.value
                 download.save_as(f"{path}/{name}.pdf")
         except Exception:
             return
 
-    def printScreen(self, name, path=None, page=None):
+    def print_screen(self, name, path=None, page=None):
         if path is None:
             path = self.path
 
@@ -95,14 +96,14 @@ class Bot:
             image = image.convert("RGB")
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
-    def solveCaptcha(self, id, page=None):
+    def solve_captcha(self, id, page=None):
         if page is None:
             page = self.page
 
         self.page.wait_for_selector(f"{id}[src]")
         code = self.page.get_attribute(id, "src").split(",")[1].strip()
         bytes = base64.b64decode(code)
- 
+
         nparr = np.frombuffer(bytes, np.uint8)
         image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -111,7 +112,7 @@ class Bot:
         kernel = np.ones((2, 2), np.uint8)
         image_final = cv2.morphologyEx(thresh, cv2.MORPH_ERODE, kernel)
 
-        _, img_encoded = cv2.imencode('.png', image_final)
+        _, img_encoded = cv2.imencode(".png", image_final)
         ocr = ddddocr.DdddOcr(show_ad=False)
         bytes = img_encoded.tobytes()
         result = ocr.classification(bytes)
@@ -120,34 +121,61 @@ class Bot:
 
     def cadastro(self):
         try:
-            self.page.goto("https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/") 
+            self.page.goto("https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/")
             self.page.wait_for_selector("iframe")
             frame = self.page.frame_locator("iframe").nth(0)
             input_cnpj = self.page.locator("input[type='text']")
-            self.moveMouse(input_cnpj, 20)
+            self.move_mouse(input_cnpj, 20)
             self.type(input_cnpj)
             checkbox = frame.locator("#checkbox")
-            self.moveMouse(checkbox, 20)
+            self.move_mouse(checkbox, 20)
             consulte = self.page.locator("button:has-text('Consultar')")
-            self.moveMouse(consulte, 10)
+            self.move_mouse(consulte, 10)
 
-            name = self.page.locator("div.section-title:has-text('NOME EMPRESARIAL') + div.section-data").first.inner_text().strip()
+            name = (
+                self.page.locator(
+                    "div.section-title:has-text('NOME EMPRESARIAL') + div.section-data"
+                )
+                .first.inner_text()
+                .strip()
+            )
             name = re.sub(r'[\\/*?:"<>|]', "", name)
             self.path = self.path / name
 
-            uf = self.page.locator("div.section-title:has-text('UF') + div.section-data").first.inner_text().strip()
+            uf = (
+                self.page.locator("div.section-title:has-text('UF') + div.section-data")
+                .first.inner_text()
+                .strip()
+            )
             self.uf = uf
-            status = self.page.locator("div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
+            status = (
+                self.page.locator(
+                    "div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data"
+                )
+                .first.inner_text()
+                .strip()
+                .capitalize()
+            )
             if status.lower() != "ativa":
-                motive = self.page.locator("div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data").first.inner_text().strip().capitalize()
-                self.result["cadastro"] = (f"{status} - {motive}" if motive else status, "#FC1B1B")
+                motive = (
+                    self.page.locator(
+                        "div.section-title:has-text('MOTIVO DE SITUAÇÃO CADASTRAL') + div.section-data"
+                    )
+                    .first.inner_text()
+                    .strip()
+                    .capitalize()
+                )
+                self.result["cadastro"] = (
+                    f"{status} - {motive}" if motive else status,
+                    "#FC1B1B",
+                )
                 self.proceed = False
                 print = self.page.locator("button:has-text('Imprimir')")
                 with self.page.context.expect_page() as popup_info:
-                    self.moveMouse(print, 10)
+                    self.move_mouse(print, 10)
                     popup = popup_info.value
                     popup.wait_for_load_state()
-                    self.printScreen("Cadastro", page=popup)
+                    self.print_screen("Cadastro", page=popup)
             else:
                 self.result["cadastro"] = (status, "#00ff37")
 
@@ -156,20 +184,24 @@ class Bot:
 
     def simples(self):
         try:
-            self.page.goto("https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21") 
+            self.page.goto(
+                "https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=21"
+            )
             self.page.wait_for_selector("iframe")
             frame = self.page.frame_locator("iframe")
             input_cnpj = frame.locator("#Cnpj")
             consulte = frame.locator("button:has-text('Consultar')")
 
-            self.moveMouse(input_cnpj, 20)
+            self.move_mouse(input_cnpj, 20)
 
             self.type(input_cnpj)
-            self.moveMouse(consulte, 10)
+            self.move_mouse(consulte, 10)
 
             self.page.wait_for_selector("iframe")
             frame = self.page.frame_locator("iframe")
-            box_status = frame.locator("text=Situação no Simples Nacional").locator("xpath=..")
+            box_status = frame.locator("text=Situação no Simples Nacional").locator(
+                "xpath=.."
+            )
 
             box_status.wait_for(state="visible")
             status = box_status.inner_text()
@@ -182,31 +214,33 @@ class Bot:
             self.download(pdf_btn, "Simples")
 
         except Exception:
-            self.printScreen("Erro simples")
+            self.print_screen("Erro simples")
             self.result["simples"] = ("Erro no software", "#FC1B1B")
 
     def cnd(self):
         try:
-            self.page.goto("https://servicos.receitafederal.gov.br/servico/certidoes/#/home/cnpj")  
+            self.page.goto(
+                "https://servicos.receitafederal.gov.br/servico/certidoes/#/home/cnpj"
+            )
             self.page.wait_for_selector("button:has-text('Aceitar')")
             accept = self.page.locator("button:has-text('Aceitar')")
-            input_cnpj = self.page.locator("input[name='niContribuinte']")    
+            input_cnpj = self.page.locator("input[name='niContribuinte']")
             consulte = self.page.locator("button:has-text('Consultar')")
 
-            self.moveMouse(accept, 5)
-            self.moveMouse(input_cnpj, 25)
+            self.move_mouse(accept, 5)
+            self.move_mouse(input_cnpj, 25)
             self.type(input_cnpj)
-            self.moveMouse(consulte, 10)
+            self.move_mouse(consulte, 10)
 
             self.page.wait_for_selector("button:has-text('Consultar')")
             consulte = self.page.locator("button:has-text('Consultar')")
-            self.moveMouse(consulte, 10)
+            self.move_mouse(consulte, 10)
 
             if self.page.locator(".br-message .description").count():
                 error = self.page.locator(".br-message .description").inner_text()
                 self.result["cnd"] = (error, "#FC1B1B")
                 return
-                
+
             self.page.wait_for_selector("datatable-body-row")
             rows = self.page.locator("datatable-body-row")
             valid_found = False
@@ -215,7 +249,7 @@ class Bot:
                 row = rows.nth(i)
                 status = row.locator("span").nth(2).inner_text().strip()
                 situation = row.locator("span").nth(5).inner_text().strip()
-                
+
                 if situation == "Válida":
                     valid_found = True
                     if "negativa" in status.lower():
@@ -227,26 +261,32 @@ class Bot:
                     self.download(second_copy, "CND")
                     break
             if not valid_found:
-                self.result["cnd"] = ("Nenhuma certidão válida encontrada", "#FC1B1B")
+                self.result["cnd"] = (
+                    "Nenhuma certidão válida encontrada",
+                    "#FC1B1B",
+                )
 
         except Exception:
-            self.printScreen("Erro cnd")
+            self.print_screen("Erro cnd")
             self.result["cnd"] = ("Erro no software", "#FC1B1B")
 
     def fgts(self):
         try:
-            self.page.goto("https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf", wait_until="domcontentloaded") 
+            self.page.goto(
+                "https://consulta-crf.caixa.gov.br/consultacrf/pages/consultaEmpregador.jsf",
+                wait_until="domcontentloaded",
+            )
             input_cnpj = self.page.locator("input[name='mainForm:txtInscricao1']")
 
-            self.moveMouse(input_cnpj, 30)
+            self.move_mouse(input_cnpj, 30)
             self.type(input_cnpj)
 
-            uf = self.page.locator('#mainForm\\:uf')
-            self.moveMouse(uf)
+            uf = self.page.locator("#mainForm\\:uf")
+            self.move_mouse(uf)
             uf.select_option(self.uf)
             consulte = self.page.locator("input[value='Consultar']")
-            self.moveMouse(consulte, 10)
-            
+            self.move_mouse(consulte, 10)
+
             self.page.wait_for_load_state("domcontentloaded")
             # if self.page.locator(".feedback-text").count():
             self.page.wait_for_selector(".feedback-text")
@@ -258,20 +298,20 @@ class Bot:
             elif "está regular" in status.lower():
                 self.result["fgts"] = ("Regular", "#00ff37")
                 link = self.page.locator("a[name='mainForm:j_id51']")
-                self.moveMouse(link, 3)
+                self.move_mouse(link, 3)
                 self.page.wait_for_selector("input:has-text('Visualizar')")
                 view = self.page.locator("input:has-text('Visualizar')")
-                self.moveMouse(view)
+                self.move_mouse(view)
                 self.page.wait_for_selector("input:has-text('Imprimir')")
-                self.printScreen("FGTS")
+                self.print_screen("FGTS")
             else:
                 self.result["fgts"] = ("Irregular", "#FC1B1B")
 
         except Exception:
-            self.printScreen("Erro fgts")
+            self.print_screen("Erro fgts")
             self.result["fgts"] = ("Erro no software", "#FC1B1B")
 
-    def cndt(self, attempt = 0):
+    def cndt(self, attempt=0):
         try:
             if attempt == 6:
                 self.result["cndt"] = ("Não passou o captcha", "#FC1B1B")
@@ -280,22 +320,22 @@ class Bot:
             self.page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
             self.page.wait_for_selector("input[value='Emitir Certidão']")
             issue1 = self.page.locator("input[value='Emitir Certidão']")
-            self.moveMouse(issue1, 5)
+            self.move_mouse(issue1, 5)
 
             input_cnpj = self.page.locator("#gerarCertidaoForm\\:cpfCnpj")
-            self.moveMouse(input_cnpj, 15)
+            self.move_mouse(input_cnpj, 15)
             self.type(input_cnpj)
 
-            captcha_result = self.solveCaptcha("#idImgBase64", attempt)
+            captcha_result = self.solve_captcha("#idImgBase64", attempt)
             input_captcha = self.page.locator("#idCampoResposta")
-            self.moveMouse(input_captcha, 15)
+            self.move_mouse(input_captcha, 15)
             self.type(input_captcha, captcha_result)
-            
+
             self.page.wait_for_selector("input[value='Emitir Certidão']")
             issue2 = self.page.locator("input[value='Emitir Certidão']")
 
             self.download(issue2, "CNDT")
-            
+
             path_test = self.path / "CNDT.pdf"
             if path_test.exists():
                 reader = PdfReader(self.path / "CNDT.pdf")
@@ -306,18 +346,21 @@ class Bot:
                 else:
                     self.result["cndt"] = (title, "#FC1B1B")
             else:
-                if(self.page.locator("#mensagens").count()):
-                    if("código de validação" in self.page.locator("#mensagens").inner_text().lower()):
+                if self.page.locator("#mensagens").count():
+                    if (
+                        "código de validação"
+                        in self.page.locator("#mensagens").inner_text().lower()
+                    ):
                         self.cndt(attempt + 1)
                 else:
-                    self.printScreen("Erro cndt")
+                    self.print_screen("Erro cndt")
                     self.result["cndt"] = ("Erro no download", "#FC1B1B")
-    
+
         except Exception:
             self.result["cndt"] = ("Erro no software", "#FC1B1B")
 
     def search(self):
-        if not self.validateCNPJ(self.cnpj):
+        if not self.validate_cnpj(self.cnpj):
             for key in self.keys:
                 self.result[key] = ("CNPJ inválido!", "#FC1B1B")
             return self.result
@@ -326,24 +369,28 @@ class Bot:
             headless=True,
             humanize=False,
             config={
-            "navigator.platform":"Win32",
-            "navigator.userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0", 
-            "navigator.language":"pt-BR",
-            "window.outerHeight":728,
-            "window.outerWidth":1366
+                "navigator.platform": "Win32",
+                "navigator.userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; "
+                "x64; rv:150.0) Gecko/20100101 Firefox/150.0",
+                "navigator.language": "pt-BR",
+                "window.outerHeight": 728,
+                "window.outerWidth": 1366,
             },
-            i_know_what_im_doing=True
-            ) as browser:
+            i_know_what_im_doing=True,
+        ) as browser:
             self.page = browser.new_page(viewport={"width": 1366, "height": 768})
 
             self.cadastro()
-            if(self.proceed):
+            if self.proceed:
                 self.simples()
                 self.cnd()
                 self.fgts()
                 self.cndt()
             else:
                 for key in self.keys:
-                    self.result[key] = ("Situação cadastral diferente de ativa", "#FFFFFF")
+                    self.result[key] = (
+                        "Situação cadastral diferente de ativa",
+                        "#FFFFFF",
+                    )
 
         return self.result
