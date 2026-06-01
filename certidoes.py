@@ -342,9 +342,14 @@ class Bot:
                 pdf = reader.pages[0]
                 title = pdf.extract_text().splitlines()[0].strip().capitalize()
                 if "negativa" in title.lower():
-                    self.result["cndt"] = (title, "#00ff37")
+                    self.result["cndt"] = ("Negativa", "#00ff37")
+                    if "positiva" in title.lower():
+                        self.result["cndt"] = (
+                            "Positiva com efeitos de negativa",
+                            "#00ff37",
+                        )
                 else:
-                    self.result["cndt"] = (title, "#FC1B1B")
+                    self.result["cndt"] = ("Positiva", "#FC1B1B")
             else:
                 if self.page.locator("#mensagens").count():
                     if (
@@ -358,7 +363,7 @@ class Bot:
 
         except Exception:
             self.result["cndt"] = ("Erro no software", "#FC1B1B")
-
+            
     def search(self):
         if not self.validate_cnpj(self.cnpj):
             for key in self.keys:
