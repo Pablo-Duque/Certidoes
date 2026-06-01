@@ -179,8 +179,13 @@ class Bot:
             else:
                 self.result["cadastro"] = (status, "#00ff37")
 
-        except Exception:
-            self.result["cadastro"] = ("Erro no software", "#FC1B1B")
+        except Exception as e:
+            print(e)
+            self.print_screen("Erro Cadastro")
+            if "timeout" in str(e).lower():
+                self.result["cadastro"] = ("Página não respondeu", "#FC1B1B")
+            else:
+                self.result["cadastro"] = ("Erro no software", "#FC1B1B")
 
     def simples(self):
         try:
@@ -213,9 +218,13 @@ class Bot:
             pdf_btn = frame.locator("button:has-text('Gerar PDF')")
             self.download(pdf_btn, "Simples")
 
-        except Exception:
-            self.print_screen("Erro simples")
-            self.result["simples"] = ("Erro no software", "#FC1B1B")
+        except Exception as e:
+            print(e)
+            self.print_screen("Erro Simples")
+            if "timeout" in str(e).lower():
+                self.result["simples"] = ("Página não respondeu", "#FC1B1B")
+            else:
+                self.result["simples"] = ("Erro no software", "#FC1B1B")
 
     def cnd(self):
         try:
@@ -266,9 +275,13 @@ class Bot:
                     "#FC1B1B",
                 )
 
-        except Exception:
-            self.print_screen("Erro cnd")
-            self.result["cnd"] = ("Erro no software", "#FC1B1B")
+        except Exception as e:
+            print(e)
+            self.print_screen("Erro CND")
+            if "timeout" in str(e).lower():
+                self.result["cnd"] = ("Página não respondeu", "#FC1B1B")
+            else:
+                self.result["cnd"] = ("Erro no software", "#FC1B1B")
 
     def fgts(self):
         try:
@@ -307,9 +320,13 @@ class Bot:
             else:
                 self.result["fgts"] = ("Irregular", "#FC1B1B")
 
-        except Exception:
-            self.print_screen("Erro fgts")
-            self.result["fgts"] = ("Erro no software", "#FC1B1B")
+        except Exception as e:
+            print(e)
+            self.print_screen("Erro FGTS")
+            if "timeout" in str(e).lower():
+                self.result["fgts"] = ("Página não respondeu", "#FC1B1B")
+            else:
+                self.result["fgts"] = ("Erro no software", "#FC1B1B")
 
     def cndt(self, attempt=0):
         try:
@@ -322,6 +339,7 @@ class Bot:
             issue1 = self.page.locator("input[value='Emitir Certidão']")
             self.move_mouse(issue1, 5)
 
+            self.page.wait_for_selector("#gerarCertidaoForm\\:cpfCnpj")
             input_cnpj = self.page.locator("#gerarCertidaoForm\\:cpfCnpj")
             self.move_mouse(input_cnpj, 15)
             self.type(input_cnpj)
@@ -358,12 +376,17 @@ class Bot:
                     ):
                         self.cndt(attempt + 1)
                 else:
-                    self.print_screen("Erro cndt")
+                    self.print_screen("Erro CNDT")
                     self.result["cndt"] = ("Erro no download", "#FC1B1B")
 
-        except Exception:
-            self.result["cndt"] = ("Erro no software", "#FC1B1B")
-            
+        except Exception as e:
+            print(e)
+            self.print_screen("Erro CNDT")
+            if "timeout" in str(e).lower():
+                self.result["cndt"] = ("Página não respondeu", "#FC1B1B")
+            else:
+                self.result["cndt"] = ("Erro no software", "#FC1B1B")
+
     def search(self):
         if not self.validate_cnpj(self.cnpj):
             for key in self.keys:
