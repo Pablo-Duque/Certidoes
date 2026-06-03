@@ -12,13 +12,8 @@ class App:
     def __init__(self, root):
         self.root = root
 
-        self.keys = [
-            "cadastro", 
-            "simples", 
-            "cnd", 
-            "fgts", 
-            "cndt",
-        ]
+        self.keys = ["cadastro", "simples", "cnd", "fgts", "cndt"]
+
         self.labels = {
             "cadastro": "Situação Cadastral",
             "simples": "Simples",
@@ -29,7 +24,9 @@ class App:
 
         self._config()
         self._center(600, 400)
+
         self._style()
+
         self._build_main()
         self.entry.bind("<Return>", self.start_process)
         self._build_loading()
