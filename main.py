@@ -8,9 +8,9 @@ from certidoes import Bot
 
 def main():
     path = Path.home() / "Downloads" / "Teste.xlsx"
-    df = pd.read_excel(path, sheet_name="Contratos", usecols=[4, 5, 16])
-    df.columns = ["name", "cnpj", "type"]
-    df = df[df["type"] == "Pessoa Jurídica"]
+    df = pd.read_excel(path, sheet_name="Contratos", usecols=[4, 5])
+    df.columns = ["name", "cnpj"]
+    df = df[df["cnpj"].str.len() == 18]
     map = df.set_index("cnpj")["name"].to_dict()
 
     keys = ["cadastro", "simples", "cnd", "fgts", "cndt"]
@@ -29,17 +29,19 @@ def main():
 
     bot = Bot(keys)
     i = 0
+
     for cnpj, name in map.items():
         i += 1
         if i == 6:
             break
+
         clean_cnpj = "".join(filter(str.isdigit, cnpj))
         token = clean_cnpj[:8]
-
         # se for a matriz armazena o token, pois nao quero rodar de novo 
         # o foco é verificar apenas as matrizes para não verificar linhas
         # desnecessarias
-        if token not in token_cnpj and clean_cnpj[12] == 1:
+
+        if token not in token_cnpj and clean_cnpj[11] == 1:
             token_cnpj.append(token)
             response = bot.search(cnpj)
             result.append(
