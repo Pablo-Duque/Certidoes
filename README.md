@@ -57,3 +57,8 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## 🔀 Outras Versões
+
+Este projeto possui uma versão alternativa voltada para processamento em lote de múltiplos CNPJs utilizando planilhas Excel e exportação de resultados em CSV.
+
+Consulte a branch `lote` para mais informações.
