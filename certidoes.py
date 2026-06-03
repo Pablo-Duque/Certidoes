@@ -257,7 +257,7 @@ class Bot:
 
             if self.page.locator(".br-message .description").count():
                 error = self.page.locator(".br-message .description").inner_text()
-                self.result["cnd"] = (error, "#FC1B1B")
+                self.result["cnd"] = (error[:50], "#FC1B1B")
                 return
 
             self.page.wait_for_selector("datatable-body-row")
