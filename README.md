@@ -1,12 +1,14 @@
-# 📄 Consulta e Download Automático de Certidões por CNPJ 
+# 📄 Consulta e Download de Certidões em Lote por CNPJ
 
-Aplicação desenvolvida em Python com interface gráfica em Tkinter para consulta e download automatizado de certidões empresariais a partir de um CNPJ.
+Aplicação desenvolvida em Python para consulta e download automatizado de certidões empresariais em larga escala a partir de uma planilha contendo múltiplos CNPJs.
 
-O projeto utiliza Camoufox para realizar web scraping com técnicas de navegação que proporcionam maior compatibilidade e estabilidade durante a execução das rotinas de coleta de dados, automatizando a obtenção de documentos e verificações cadastrais em diferentes órgãos e serviços públicos.
+O projeto utiliza Camoufox para automatizar a navegação web necessária para obtenção de documentos e verificações cadastrais em diferentes órgãos e serviços públicos. Os dados são processados em lote utilizando Pandas, permitindo a geração de relatórios consolidados em formato CSV.
 
 ## 🚀 Sobre o Projeto
 
-Este projeto surgiu como uma iniciativa de estudo e aprimoramento de conhecimentos em Python, automação web e web scraping.
+Este projeto surgiu como uma evolução da versão com interface gráfica, com o objetivo de aprimorar conhecimentos em Python, automação web, web scraping e processamento de dados utilizando Pandas.
+
+A proposta é automatizar consultas para múltiplas empresas de forma sequencial, reduzindo o trabalho manual em cenários que exigem análise de grandes quantidades de CNPJs.
 
 ## ⚠ Aviso Importante ⚠
 
@@ -16,29 +18,32 @@ Embora o sistema automatize as verificações e o download das certidões, recom
 
 Este projeto tem finalidade de automação e auxílio operacional, não substituindo a validação oficial realizada diretamente nos órgãos emissores.
 
-## ✨ Funcionalidades 
+## ✨ Funcionalidades
 
-* Consulta da situação cadastral da empresa através do CNPJ informado.
+* Leitura automática de planilhas Excel contendo CNPJs.
+* Consulta da situação cadastral das empresas.
 * Validação prévia da situação cadastral antes da execução das demais consultas.
 * Verificação do enquadramento no Simples Nacional.
 * Consulta da Certidão Negativa de Débitos (CND).
 * Consulta da Regularidade do Empregador perante o FGTS.
 * Consulta da Certidão Negativa de Débitos Trabalhistas (CNDT).
-* Exibição dos resultados diretamente na interface gráfica.
 * Download automático das certidões e comprovantes disponíveis.
+* Processamento sequencial de múltiplos CNPJs.
+* Exportação consolidada dos resultados para arquivo CSV.
 
-## 🔄 Como funciona 
+## 🔄 Como funciona
 
-1. Informe o CNPJ na interface.
-2. O sistema consulta a situação cadastral da empresa.
-3. Caso a empresa esteja ativa, as demais verificações são iniciadas automaticamente.
-4. Os resultados são exibidos na tela.
-5. Os documentos encontrados são baixados para armazenamento local.
+1. O sistema lê uma planilha Excel contendo os CNPJs a serem consultados.
+2. Cada empresa é processada individualmente.
+3. A situação cadastral é validada antes das demais consultas.
+4. As verificações e downloads são executados automaticamente.
+5. Os resultados são armazenados em memória durante o processamento.
+6. Ao final, um arquivo CSV consolidado é gerado com todas as informações obtidas.
 
-## 🛠️ Tecnologias utilizadas 
+## 🛠️ Tecnologias Utilizadas
 
 * Python
-* Tkinter
+* Pandas
 * Camoufox
 * Web Scraping
 
@@ -59,6 +64,6 @@ python main.py
 
 ## 🔀 Outras Versões
 
-Este projeto possui uma versão alternativa voltada para processamento em lote de múltiplos CNPJs utilizando planilhas Excel e exportação de resultados em CSV.
+Existe também uma versão com interface gráfica desenvolvida em Tkinter para consultas individuais de empresas.
 
-Consulte a branch `lote` para mais informações.
+Consulte a branch `main` para mais informações.
