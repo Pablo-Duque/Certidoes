@@ -12,8 +12,13 @@ class App:
     def __init__(self, root):
         self.root = root
 
-        self.keys = ["cadastro", "simples", "cnd", "fgts", "cndt"]
-
+        self.keys = [
+            "cadastro",
+            "simples",
+            "cnd",
+            "fgts",
+            "cndt",
+        ]
         self.labels = {
             "cadastro": "Situação Cadastral",
             "simples": "Simples",
