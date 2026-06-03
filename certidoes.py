@@ -2,6 +2,7 @@ import base64
 import io
 import random
 import re
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from time import sleep
@@ -69,6 +70,13 @@ class Bot:
         for letter in text:
             box.type(letter, delay=random.uniform(100, 265))
         sleep(random.uniform(0.2, 0.7))
+
+    def remove_accent(self, text):
+        return "".join(
+            c
+            for c in unicodedata.normalize("NFD", text)
+            if unicodedata.category(c) != "Mn"
+        )
 
     def download(self, download_btn, name, path=None):
         if path is None:
@@ -210,7 +218,9 @@ class Bot:
 
             box_status.wait_for(state="visible")
             status = box_status.inner_text()
-            if "NÃO optante pelo Simples Nacional" in status:
+            if "nao optante pelo simples nacional" in self.remove_accent(
+                status.lower()
+            ):
                 self.result["simples"] = ("Não optante", "#FC1B1B")
             else:
                 self.result["simples"] = ("Optante", "#00ff37")
@@ -304,13 +314,15 @@ class Bot:
             # if self.page.locator(".feedback-text").count():
             self.page.wait_for_selector(".feedback-text")
             status = self.page.locator(".feedback-text").inner_text()
-            if "não encontrado" in status.lower():
+            if "nao encontrado" in self.remove_accent(status.lower()):
                 self.result["fgts"] = ("Não encontrado", "#FC1B1B")
-            elif "informações disponíveis não são suficientes" in status.lower():
+            elif "informacoes disponiveis nao sao suficientes" in self.remove_accent(
+                status.lower()
+            ):
                 self.result["fgts"] = ("Informações insuficientes", "#FC1B1B")
-            elif "está regular" in status.lower():
+            elif "esta regular" in self.remove_accent(status.lower()):
                 self.result["fgts"] = ("Regular", "#00ff37")
-                link = self.page.locator("a[name='mainForm:j_id51']")
+                link = self.page.locator("a:has-text('Certificado de Regularidade')")
                 self.move_mouse(link, 3)
                 self.page.wait_for_selector("input:has-text('Visualizar')")
                 view = self.page.locator("input:has-text('Visualizar')")
@@ -318,6 +330,7 @@ class Bot:
                 self.page.wait_for_selector("input:has-text('Imprimir')")
                 self.print_screen("FGTS")
             else:
+                self.print_screen("FGTS")
                 self.result["fgts"] = ("Irregular", "#FC1B1B")
 
         except Exception as e:
