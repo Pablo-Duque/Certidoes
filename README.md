@@ -61,4 +61,4 @@ python main.py
 
 Este projeto possui uma versão alternativa voltada para processamento em lote de múltiplos CNPJs utilizando planilhas Excel e exportação de resultados em CSV.
 
-Consulte a branch `lote` para mais informações.
+Consulte a branch `batch` para mais informações.
