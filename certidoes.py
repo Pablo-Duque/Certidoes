@@ -15,15 +15,15 @@ from pypdf import PdfReader
 
 
 class Bot:
-    def __init__(self, cnpj, keys):
-
-        self.cnpj = cnpj
+    def __init__(self,keys):
         self.keys = keys
         for key in self.keys:
             self.result = {key: None}
 
         self.date = datetime.now().strftime("%Y/%m/%d")
         self.path = Path.home() / "Downloads" / "Certidoes"  # / self.date
+
+        self.cnpj = None
         self.page = None
         self.uf = None
         self.proceed = True
@@ -387,11 +387,13 @@ class Bot:
             else:
                 self.result["cndt"] = ("Erro no software", "#FC1B1B")
 
-    def search(self):
-        if not self.validate_cnpj(self.cnpj):
+    def search(self, cnpj):
+        if not self.validate_cnpj(cnpj):
             for key in self.keys:
                 self.result[key] = ("CNPJ inválido!", "#FC1B1B")
             return self.result
+        
+        self.cnpj = cnpj
 
         with Camoufox(
             headless=True,
