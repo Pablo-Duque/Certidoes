@@ -41,7 +41,7 @@ def main():
         # o foco é verificar apenas as matrizes para não verificar linhas
         # desnecessarias
 
-        if token not in token_cnpj and clean_cnpj[11] == 1:
+        if token not in token_cnpj and clean_cnpj[11] == "1":
             token_cnpj.append(token)
             response = bot.search(cnpj)
             result.append(
