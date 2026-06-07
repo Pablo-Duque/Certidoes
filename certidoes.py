@@ -138,6 +138,11 @@ class Bot:
             self.type(input_cnpj)
             checkbox = frame.locator("#checkbox")
             self.move_mouse(checkbox, 20)
+            frame.wait_for_selector('#checkbox[aria-checked="true"]')
+            # self.page.wait_for_function(
+            #     "(el) => el.getAttribute('aria-checked') === 'true'",
+            #     checkbox.element_handle()
+            # )
             consulte = self.page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
