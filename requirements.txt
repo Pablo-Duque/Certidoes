@@ -4,4 +4,4 @@ numpy==2.4.6
 opencv_python==4.13.0.92
 pandas==3.0.3
 Pillow==12.2.0
-pypdf==6.12.2
+pypdf==6.13.0

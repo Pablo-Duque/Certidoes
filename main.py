@@ -7,8 +7,8 @@ from certidoes import Bot
 
 
 def main():
-    path = Path.home() / "Downloads" / "Teste.xlsx"
-    df = pd.read_excel(path, sheet_name="Contratos", usecols=[4, 5])
+    path = Path.home() / "Downloads"
+    df = pd.read_excel(path / "Teste.xlsx", sheet_name="Contratos", usecols=[4, 5])
     df.columns = ["name", "cnpj"]
     df = df[df["cnpj"].str.len() == 18]
     map = df.set_index("cnpj")["name"].to_dict()
@@ -21,18 +21,17 @@ def main():
         "fgts": "FGTS",
         "cndt": "CNDT",
     }
-    header = [["CNPJ"], ["Nome"]]
+
+    header = ["Nome", "CNPJ"] + [labels[k] for k in keys]
     result = []
     token_cnpj = []
-    for key in keys:
-        header.append(labels[key])
 
     bot = Bot(keys)
     i = 0
 
     for cnpj, name in map.items():
         i += 1
-        if i == 6:
+        if i == 4:
             break
 
         clean_cnpj = "".join(filter(str.isdigit, cnpj))
@@ -43,21 +42,21 @@ def main():
 
         if token not in token_cnpj and clean_cnpj[11] == "1":
             token_cnpj.append(token)
-            response = bot.search(cnpj)
+            response = bot.search(clean_cnpj)
             result.append(
                 [
-                    cnpj,
                     name,
-                    response["cadastro"][0],
-                    response["simples"][0],
-                    response["cnd"][0],
-                    response["fgts"][0],
-                    response["cndt"][0],
+                    cnpj,
+                    response["cadastro"],
+                    response["simples"],
+                    response["cnd"],
+                    response["fgts"],
+                    response["cndt"],
                 ]
             )
 
     with open(
-        "Resultado_consulta.csv", mode="w", newline="", encoding="utf-8-sig"
+        path / "Resultado_consulta.csv", mode="w", newline="", encoding="utf-8-sig"
     ) as file:
         writer = csv.writer(file, delimiter=";")
         writer.writerow(header)

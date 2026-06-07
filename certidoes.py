@@ -1,7 +1,8 @@
 import base64
 import io
+import os
 import random
-import re
+# import re
 import unicodedata
 from datetime import datetime
 from pathlib import Path
@@ -16,14 +17,14 @@ from pypdf import PdfReader
 
 
 class Bot:
-    def __init__(self,keys):
+    def __init__(self, keys):
 
         self.keys = keys
         for key in self.keys:
             self.result = {key: None}
 
         self.date = datetime.now().strftime("%Y/%m/%d")
-        self.path = Path.home() / "Downloads" / "Certidoes"  # / self.date
+        self.path = Path.home() / "Downloads" #/ "Certidoes" / self.date
         self.cnpj = None
         self.page = None
         self.uf = None
@@ -140,15 +141,15 @@ class Bot:
             consulte = self.page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
-            name = (
-                self.page.locator(
-                    "div.section-title:has-text('NOME EMPRESARIAL') + div.section-data"
-                )
-                .first.inner_text()
-                .strip()
-            )
-            name = re.sub(r'[\\/*?:"<>|]', "", name)
-            self.path = self.path / name
+            # name = (
+            #     self.page.locator(
+            #         "div.section-title:has-text('NOME EMPRESARIAL') + div.section-data"
+            #     )
+            #     .first.inner_text()
+            #     .strip()
+            # )
+            # name = re.sub(r'[\\/*?:"<>|]', "", name)
+            # self.path = self.path / name
 
             uf = (
                 self.page.locator("div.section-title:has-text('UF') + div.section-data")
@@ -173,26 +174,20 @@ class Bot:
                     .strip()
                     .capitalize()
                 )
-                self.result["cadastro"] = (
-                    f"{status} - {motive}" if motive else status
-                )
+                self.result["cadastro"] = f"{status} - {motive}" if motive else status
                 self.proceed = False
-                print = self.page.locator("button:has-text('Imprimir')")
-                with self.page.context.expect_page() as popup_info:
-                    self.move_mouse(print, 10)
-                    popup = popup_info.value
-                    popup.wait_for_load_state()
-                    self.print_screen("Cadastro", page=popup)
+                # print = self.page.locator("button:has-text('Imprimir')")
+                # with self.page.context.expect_page() as popup_info:
+                #     self.move_mouse(print, 10)
+                #     popup = popup_info.value
+                #     popup.wait_for_load_state()
+                #     self.print_screen("Cadastro", page=popup)
             else:
-                self.result["cadastro"] = (status)
+                self.result["cadastro"] = status
 
         except Exception as e:
-            print(e)
-            self.print_screen("Erro Cadastro")
-            if "timeout" in str(e).lower():
-                self.result["cadastro"] = ("Página não respondeu")
-            else:
-                self.result["cadastro"] = ("Erro no software")
+            # self.print_screen("Erro Cadastro")
+            self.result["cadastro"] = str(e)
 
     def simples(self):
         try:
@@ -220,20 +215,16 @@ class Bot:
             if "nao optante pelo simples nacional" in self.remove_accent(
                 status.lower()
             ):
-                self.result["simples"] = ("Não optante")
+                self.result["simples"] = "Não optante"
             else:
-                self.result["simples"] = ("Optante")
+                self.result["simples"] = "Optante"
 
-            pdf_btn = frame.locator("button:has-text('Gerar PDF')")
-            self.download(pdf_btn, "Simples")
+            # pdf_btn = frame.locator("button:has-text('Gerar PDF')")
+            # self.download(pdf_btn, "Simples")
 
         except Exception as e:
-            print(e)
-            self.print_screen("Erro Simples")
-            if "timeout" in str(e).lower():
-                self.result["simples"] = ("Página não respondeu")
-            else:
-                self.result["simples"] = ("Erro no software")
+            # self.print_screen("Erro Simples")
+            self.result["simples"] = str(e)
 
     def cnd(self):
         try:
@@ -256,7 +247,7 @@ class Bot:
 
             if self.page.locator(".br-message .description").count():
                 error = self.page.locator(".br-message .description").inner_text()
-                self.result["cnd"] = (error)
+                self.result["cnd"] = error
                 return
 
             self.page.wait_for_selector("datatable-body-row")
@@ -271,25 +262,19 @@ class Bot:
                 if situation == "Válida":
                     valid_found = True
                     if "negativa" in status.lower():
-                        self.result["cnd"] = (status)
+                        self.result["cnd"] = status
                     else:
-                        self.result["cnd"] = (status)
+                        self.result["cnd"] = status
 
-                    second_copy = row.locator("button:has(i.fa-download)")
-                    self.download(second_copy, "CND")
+                    # second_copy = row.locator("button:has(i.fa-download)")
+                    # self.download(second_copy, "CND")
                     break
             if not valid_found:
-                self.result["cnd"] = (
-                    "Nenhuma certidão válida encontrada"
-                )
+                self.result["cnd"] = "Nenhuma certidão válida encontrada"
 
         except Exception as e:
-            print(e)
-            self.print_screen("Erro CND")
-            if "timeout" in str(e).lower():
-                self.result["cnd"] = ("Página não respondeu")
-            else:
-                self.result["cnd"] = ("Erro no software")
+            # self.print_screen("Erro CND")
+            self.result["cnd"] = str(e)
 
     def fgts(self):
         try:
@@ -313,36 +298,32 @@ class Bot:
             self.page.wait_for_selector(".feedback-text")
             status = self.page.locator(".feedback-text").inner_text()
             if "nao encontrado" in self.remove_accent(status.lower()):
-                self.result["fgts"] = ("Não encontrado")
+                self.result["fgts"] = "Não encontrado"
             elif "informacoes disponiveis nao sao suficientes" in self.remove_accent(
                 status.lower()
             ):
-                self.result["fgts"] = ("Informações insuficientes")
+                self.result["fgts"] = "Informações insuficientes"
             elif "esta regular" in self.remove_accent(status.lower()):
-                self.result["fgts"] = ("Regular")
+                self.result["fgts"] = "Regular"
                 link = self.page.locator("a:has-text('Certificado de Regularidade')")
                 self.move_mouse(link, 3)
                 self.page.wait_for_selector("input:has-text('Visualizar')")
                 view = self.page.locator("input:has-text('Visualizar')")
                 self.move_mouse(view)
                 self.page.wait_for_selector("input:has-text('Imprimir')")
-                self.print_screen("FGTS")
+                # self.print_screen("FGTS")
             else:
-                self.print_screen("FGTS")
-                self.result["fgts"] = ("Irregular")
+                # self.print_screen("FGTS")
+                self.result["fgts"] = "Irregular"
 
         except Exception as e:
-            print(e)
-            self.print_screen("Erro FGTS")
-            if "timeout" in str(e).lower():
-                self.result["fgts"] = ("Página não respondeu")
-            else:
-                self.result["fgts"] = ("Erro no software")
+            # self.print_screen("Erro FGTS")
+            self.result["fgts"] = str(e)
 
     def cndt(self, attempt=0):
         try:
             if attempt == 6:
-                self.result["cndt"] = ("Não passou o captcha")
+                self.result["cndt"] = "Não passou o captcha"
                 return
 
             self.page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
@@ -371,13 +352,12 @@ class Bot:
                 pdf = reader.pages[0]
                 title = pdf.extract_text().splitlines()[0].strip().capitalize()
                 if "negativa" in title.lower():
-                    self.result["cndt"] = ("Negativa")
+                    self.result["cndt"] = "Negativa"
                     if "positiva" in title.lower():
-                        self.result["cndt"] = (
-                            "Positiva com efeitos de negativa"
-                        )
+                        self.result["cndt"] = "Positiva com efeitos de negativa"
+
                 else:
-                    self.result["cndt"] = ("Positiva")
+                    self.result["cndt"] = "Positiva"
             else:
                 if self.page.locator("#mensagens").count():
                     if (
@@ -386,27 +366,23 @@ class Bot:
                     ):
                         self.cndt(attempt + 1)
                 else:
-                    self.print_screen("Erro CNDT")
-                    self.result["cndt"] = ("Erro no download")
+                    # self.print_screen("Erro CNDT")
+                    self.result["cndt"] = "Erro no download"
+
+            os.remove(self.path / "CNDT.pdf")
 
         except Exception as e:
-            print(e)
-            self.print_screen("Erro CNDT")
-            if "timeout" in str(e).lower():
-                self.result["cndt"] = ("Página não respondeu")
-            else:
-                self.result["cndt"] = ("Erro no software")
+            # self.print_screen("Erro CNDT")
+            self.result["cndt"] = str(e)
 
     def search(self, cnpj):
         if not self.validate_cnpj(cnpj):
             for key in self.keys:
-                self.result[key] = ("CNPJ inválido!")
+                self.result[key] = "CNPJ inválido!"
             return self.result
-
         self.cnpj = cnpj
-
         with Camoufox(
-            headless=True,
+            headless=False,
             humanize=False,
             config={
                 "navigator.platform": "Win32",
@@ -428,8 +404,6 @@ class Bot:
                 self.cndt()
             else:
                 for key in self.keys:
-                    self.result[key] = (
-                        "Situação cadastral diferente de ativa"
-                    )
+                    self.result[key] = "Situação cadastral diferente de ativa"
 
         return self.result
