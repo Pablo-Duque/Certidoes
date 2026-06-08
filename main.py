@@ -23,7 +23,7 @@ def main():
     }
     header = [["CNPJ"], ["Nome"]]
     result = []
-    token_cnpj = []
+    token_cnpj = set()
     for key in keys:
         header.append(labels[key])
 
@@ -37,7 +37,7 @@ def main():
         # o foco é verificar apenas as matrizes para não verificar linhas
         # desnecessarias
         if token not in token_cnpj and token[12] == 1:
-            token_cnpj.append(token)
+            token_cnpj.add(token)
             response = bot.search(cnpj)
             result.append(
                 [
