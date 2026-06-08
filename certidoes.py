@@ -105,10 +105,7 @@ class Bot:
             image = image.convert("RGB")
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
-    def solve_captcha(self, id, page=None):
-        if page is None:
-            page = self.page
-
+    def solve_captcha(self, id):
         self.page.wait_for_selector(f"{id}[src]")
         code = self.page.get_attribute(id, "src").split(",")[1].strip()
         bytes = base64.b64decode(code)
@@ -359,7 +356,7 @@ class Bot:
             self.move_mouse(input_cnpj, 15)
             self.type(input_cnpj)
 
-            captcha_result = self.solve_captcha("#idImgBase64", attempt)
+            captcha_result = self.solve_captcha("#idImgBase64")
             input_captcha = self.page.locator("#idCampoResposta")
             self.move_mouse(input_captcha, 15)
             self.type(input_captcha, captcha_result)
