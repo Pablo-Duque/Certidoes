@@ -176,9 +176,9 @@ class Bot:
                     "#FC1B1B",
                 )
                 self.proceed = False
-                print = self.page.locator("button:has-text('Imprimir')")
+                print_btn = self.page.locator("button:has-text('Imprimir')")
                 with self.page.context.expect_page() as popup_info:
-                    self.move_mouse(print, 10)
+                    self.move_mouse(print_btn, 10)
                     popup = popup_info.value
                     popup.wait_for_load_state()
                     self.print_screen("Cadastro", page=popup)
