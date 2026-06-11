@@ -66,7 +66,12 @@ class App:
         style = ttk.Style()
         style.theme_use("clam")
 
-        style.configure("Entry.TEntry", fieldbackground="#1a1d24", foreground="white")
+        style.configure(
+            "Entry.TEntry",
+            fieldbackground="#1a1d24",
+            foreground="white",
+            insertcolor="white",
+        )
 
         style.configure("Blue.TButton", background="#1d4ed8", foreground="white")
         style.map(
@@ -79,12 +84,12 @@ class App:
 
     def format_cnpj(self, *_):
         value = self.cnpj_var.get()
-        entry = self.entry
 
         digits = "".join(filter(str.isdigit, value))[:14]
+        cursor_pos = self.entry.index(tk.INSERT)
+        was_at_end = cursor_pos == len(value)
 
         formatted = ""
-
         if len(digits) > 0:
             formatted += digits[:2]
         if len(digits) > 2:
@@ -99,8 +104,8 @@ class App:
         self.cnpj_var.trace_remove("write", self.trace_id)
         self.cnpj_var.set(formatted)
         self.trace_id = self.cnpj_var.trace_add("write", self.format_cnpj)
-
-        self.root.after(1, lambda: entry.icursor("end"))
+        if was_at_end:
+            self.root.after(1, lambda: self.entry.icursor("end"))
 
     def toggle_all(self):
         value = self.select_all_var.get()
@@ -130,6 +135,7 @@ class App:
             style="Entry.TEntry",
         )
         self.entry.pack(ipadx=10, ipady=6)
+        self.entry.focus_set()
 
         self.check_vars = {
             "cadastro": tk.BooleanVar(value=True),
