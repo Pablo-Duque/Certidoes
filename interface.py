@@ -19,6 +19,7 @@ class App:
             "fgts",
             "cndt",
         ]
+
         self.labels = {
             "cadastro": "Situação Cadastral",
             "simples": "Simples",
@@ -171,8 +172,14 @@ class App:
             self.result_labels[key].config(text=text, fg=color)
 
     def apply_result(self, result):
-        for key, (text, color) in result.items():
-            self.set_result(key, f"{self.labels[key]}: {text}", color)
+        for key, val in result.items():
+            text, color = val
+            if val is None:
+                self.set_result(
+                    key, f"{self.labels[key]}: Erro de atribuição", "#FC1B1B"
+                )
+            else:
+                self.set_result(key, f"{self.labels[key]}: {text}", color)
 
     def finish(self, result):
         self.apply_result(result)
