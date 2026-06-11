@@ -19,9 +19,6 @@ class Bot:
     def __init__(self,keys):
 
         self.keys = keys
-        for key in self.keys:
-            self.result = {key: None}
-
         self.date = datetime.now().strftime("%Y/%m/%d")
         self.path = Path.home() / "Downloads" / "Certidoes"  # / self.date
         self.cnpj = None
@@ -398,6 +395,7 @@ class Bot:
                 self.result["cndt"] = ("Erro no software")
 
     def search(self, cnpj):
+        self.result = {key: None for key in self.keys}
         if not self.validate_cnpj(cnpj):
             for key in self.keys:
                 self.result[key] = ("CNPJ inválido!")
