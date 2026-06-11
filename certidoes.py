@@ -21,8 +21,7 @@ class Bot:
 
         self.cnpj = cnpj
         self.keys = keys
-        for key in self.keys:
-            self.result = {key: None}
+        self.result = {key: None for key in self.keys}
 
         self.date = datetime.now().strftime("%Y/%m/%d")
         self.path = Path.home() / "Downloads" / "Certidoes"  # / self.date
