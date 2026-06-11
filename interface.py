@@ -173,12 +173,12 @@ class App:
 
     def apply_result(self, result):
         for key, val in result.items():
-            text, color = val
             if val is None:
                 self.set_result(
                     key, f"{self.labels[key]}: Erro de atribuição", "#FC1B1B"
                 )
             else:
+                text, color = val
                 self.set_result(key, f"{self.labels[key]}: {text}", color)
 
     def finish(self, result):
