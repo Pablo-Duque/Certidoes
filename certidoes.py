@@ -24,7 +24,6 @@ class Bot:
         self.cnpj = None
         self.page = None
         self.uf = None
-        self.proceed = True
 
     def validate_cnpj(self, cnpj):
         if len(cnpj) != 14 or len(set(cnpj)) == 1:
@@ -396,6 +395,7 @@ class Bot:
 
     def search(self, cnpj):
         self.result = {key: None for key in self.keys}
+        self.proceed = True
         if not self.validate_cnpj(cnpj):
             for key in self.keys:
                 self.result[key] = ("CNPJ inválido!")
