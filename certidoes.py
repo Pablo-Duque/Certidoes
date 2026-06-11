@@ -422,9 +422,12 @@ class Bot:
             self.cadastro()
             if self.proceed:
                 self.simples()
-                self.cnd()
-                self.fgts()
-                self.cndt()
+                if "cnd" in self.keys:
+                    self.cnd()
+                if "fgts" in self.keys:
+                    self.fgts()
+                if "cndt" in self.keys:
+                    self.cndt()
             else:
                 for key in self.keys:
                     if key != "cadastro":
