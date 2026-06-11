@@ -110,7 +110,7 @@ class App:
     def toggle_all(self):
         value = self.select_all_var.get()
 
-        for key in ("cnd", "fgts", "cndt"):
+        for key in ("simples", "cnd", "fgts", "cndt"):
             self.check_vars[key].set(value)
 
     def _build_main(self):
@@ -162,16 +162,17 @@ class App:
                 fg="white",
                 selectcolor="#0f1115",
                 activebackground="#0f1115",
-                state=("disabled" if key in ("cadastro", "simples") else "normal"),
+                state=("disabled" if key in "cadastro" else "normal"),
+                # ("cadastro", "simples")
             )
             chk.pack(side="left")
 
             label = tk.Label(
                 row,
                 text=self.labels[key],
-                fg=("#808080" if key in ("cadastro", "simples") else "white"),
+                fg=("#808080" if key in "cadastro" else "white"),
+                # ("cadastro", "simples")
                 bg="#0f1115",
-                width=20,
                 anchor="w",
                 font=("Segoe UI", 10),
             )
@@ -200,7 +201,6 @@ class App:
             text="Marcar todos",
             fg="white",
             bg="#0f1115",
-            width=20,
             anchor="w",
             font=("Segoe UI", 10),
         ).pack(side="left")

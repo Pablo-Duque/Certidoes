@@ -421,7 +421,8 @@ class Bot:
 
             self.cadastro()
             if self.proceed:
-                self.simples()
+                if "simples" in self.keys:
+                    self.simples()
                 if "cnd" in self.keys:
                     self.cnd()
                 if "fgts" in self.keys:
