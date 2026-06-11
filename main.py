@@ -36,9 +36,9 @@ def main():
         # se for a matriz armazena o token, pois nao quero rodar de novo 
         # o foco é verificar apenas as matrizes para não verificar linhas
         # desnecessarias
-        if token not in token_cnpj and token[11] == 1:
+        if token not in token_cnpj and clean_cnpj[11] == 1:
             token_cnpj.add(token)
-            response = bot.search(cnpj)
+            response = bot.search(clean_cnpj)
             result.append(
                 [
                     cnpj,
