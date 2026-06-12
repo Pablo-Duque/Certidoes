@@ -5,12 +5,13 @@ from threading import Thread
 import tkinter as tk
 from tkinter import ttk
 
-from certidoes import Bot
+from bot_worker import BotWorker
 
 
 class App:
     def __init__(self, root):
         self._root = root
+        self._root.protocol("WM_DELETE_WINDOW", self.close)
 
         self._keys = [
             "cadastro",
@@ -38,6 +39,8 @@ class App:
         self._build_loading()
 
         self.show_main()
+
+        self._worker = BotWorker()
 
     def _config(self):
         self._root.title("Certidões")
@@ -239,37 +242,41 @@ class App:
 
         self.show_loading()
 
-        Thread(
-            target=self.run_bot,
-            args=(cnpj, selected_keys),
-            daemon=True,
-        ).start()
+        Thread(target=self.run_bot, args=(cnpj, selected_keys)).start()
+
+    def validate_cnpj(self, cnpj):
+        if len(cnpj) != 14 or len(set(cnpj)) == 1:
+            return False
+
+        def calculate_digit(slice_data, weights):
+            total = sum(int(num) * weight for num, weight in zip(slice_data, weights))
+            remainder = total % 11
+            return "0" if remainder < 2 else str(11 - remainder)
+
+        weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+        digit1 = calculate_digit(cnpj[:12], weights1)
+        digit2 = calculate_digit(cnpj[:13], weights2)
+
+        return cnpj[-2:] == (digit1 + digit2)
 
     def run_bot(self, cnpj, selected_keys):
-        bot = Bot(cnpj, selected_keys)
-
-        result = bot.search()
-
-        self._root.after(0, lambda: self.finish(result))
-
-    def set_result(self, key, text, color):
-        if key in self.result_labels:
-            self.result_labels[key].config(text=text, fg=color)
-
-    def apply_result(self, result):
-        for key in self._keys:
-            if key not in result:
-                self.set_result(key, f"{self._labels[key]}: Não selecionado", "#FFFFFF")
-
-            elif result[key] is None:
-                self.set_result(
-                    key, f"{self._labels[key]}: Erro de atribuição", "#FC1B1B"
-                )
-
+        if not self.validate_cnpj(cnpj):
+            result = {}
+            for key in selected_keys:
+                result[key] = ("CNPJ inválido!", "#FC1B1B")
+        else:
+            result_queue = self._worker.submit(cnpj, selected_keys)
+            success, response = result_queue.get()
+            if success:
+                result = response
             else:
-                text, color = result[key]
-
-                self.set_result(key, f"{self._labels[key]}: {text}", color)
+                result = {}
+                for key in self._keys:
+                    if key in result:
+                        result[key] = ("Erro na thread", "#FC1B1B")
+        self._root.after(0, lambda: self.finish(result))
 
     def finish(self, result):
         for key in self._keys:
@@ -284,7 +291,9 @@ class App:
             else:
                 text, color = result[key]
 
-            self.option_labels[key].config(text=f"{self._labels[key]}: {text}", fg=color)
+            self.option_labels[key].config(
+                text=f"{self._labels[key]}: {text}", fg=color
+            )
 
             self.checkbuttons[key].config(state="disabled")
 
@@ -298,6 +307,7 @@ class App:
     def reset_screen(self):
         self.entry.config(state="normal")
         self.entry.focus_set()
+
         for key in self._keys:
             self.checkbuttons[key].config(
                 state=("disabled" if key in "cadastro" else "normal"),
@@ -311,3 +321,7 @@ class App:
             )
 
         self.btn.config(text="Gerar Certidões", command=self.start_process)
+
+    def close(self):
+        self._root.destroy()
+        self._worker.stop()

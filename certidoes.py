@@ -17,34 +17,37 @@ from pypdf import PdfReader
 
 
 class Bot:
-    def __init__(self, cnpj, keys):
-
-        self._cnpj = cnpj
-        self._keys = keys
-        self._result = {key: None for key in self._keys}
+    def __init__(self):
+        self._cnpj = None
+        self._keys = None
+        self._path = None
+        self._uf = None
+        self._close = False
 
         self._date = datetime.now().strftime("%Y/%m/%d")
-        self._path = Path.home() / "Downloads" / "Certidoes"  # / self._date
-        self._page = None
-        self._uf = None
-        self._proceed = True
 
-    def validate_cnpj(self, cnpj):
-        if len(cnpj) != 14 or len(set(cnpj)) == 1:
-            return False
-
-        def calculate_digit(slice_data, weights):
-            total = sum(int(num) * weight for num, weight in zip(slice_data, weights))
-            remainder = total % 11
-            return "0" if remainder < 2 else str(11 - remainder)
-
-        weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-        weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-
-        digit1 = calculate_digit(cnpj[:12], weights1)
-        digit2 = calculate_digit(cnpj[:13], weights2)
-
-        return cnpj[-2:] == (digit1 + digit2)
+        self._camoufox = Camoufox(
+            headless=True,
+            humanize=False,
+            config={
+                "navigator.platform": "Win32",
+                "navigator.userAgent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; "
+                    "x64; rv:150.0) Gecko/20100101 Firefox/150.0"
+                ),
+                "navigator.language": "pt-BR",
+                "window.outerHeight": 728,
+                "window.outerWidth": 1366,
+            },
+            i_know_what_im_doing=True,
+        )
+        self._browser = self._camoufox.__enter__()
+        self._page = self._browser.new_page(
+            viewport={
+                "width": 1366,
+                "height": 768,
+            }
+        )
 
     def move_mouse(self, box, margin=10):
         bounding = box.bounding_box()
@@ -85,8 +88,8 @@ class Bot:
             path.mkdir(parents=True, exist_ok=True)
             with self._page.expect_download(timeout=1500) as download_info:
                 self.move_mouse(download_btn, 2)
-            download = download_info.value
-            download.save_as(f"{path}/{name}.pdf")
+                download = download_info.value
+                download.save_as(f"{path}/{name}.pdf")
         except Exception:
             return
 
@@ -105,7 +108,7 @@ class Bot:
         image.save(str(path / f"{name}.pdf"), "PDF", resolution=100)
 
     def solve_captcha(self, id):
-        self._page.wait_for_selector(f"{id}[src]")
+        self._page.wait_for_selector(f"{id}[src]", timeout=10000)
         code = self._page.get_attribute(id, "src").split(",")[1].strip()
         bytes = base64.b64decode(code)
 
@@ -408,43 +411,35 @@ class Bot:
             else:
                 self._result["cndt"] = ("Erro no software", "#FC1B1B")
 
-    def search(self):
-        if not self.validate_cnpj(self._cnpj):
+    def search(self, cnpj, keys):
+        self._path = Path.home() / "Downloads" / "Certidoes"  # / self._date
+        self._proceed = True
+        self._cnpj = cnpj
+        self._keys = keys
+        self._result = {key: None for key in self._keys}
+
+        self.cadastro()
+        if self._proceed and not self._close:
+            if "simples" in self._keys and not self._close:
+                self.simples()
+            if "cnd" in self._keys and not self._close:
+                self.cnd()
+            if "fgts" in self._keys and not self._close:
+                self.fgts()
+            if "cndt" in self._keys and not self._close:
+                self.cndt()
+        else:
             for key in self._keys:
-                self._result[key] = ("CNPJ inválido!", "#FC1B1B")
-            return self._result
-
-        with Camoufox(
-            headless=True,
-            humanize=False,
-            config={
-                "navigator.platform": "Win32",
-                "navigator.userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; "
-                "x64; rv:150.0) Gecko/20100101 Firefox/150.0",
-                "navigator.language": "pt-BR",
-                "window.outerHeight": 728,
-                "window.outerWidth": 1366,
-            },
-            i_know_what_im_doing=True,
-        ) as browser:
-            self._page = browser.new_page(viewport={"width": 1366, "height": 768})
-
-            self.cadastro()
-            if self._proceed:
-                if "simples" in self._keys:
-                    self.simples()
-                if "cnd" in self._keys:
-                    self.cnd()
-                if "fgts" in self._keys:
-                    self.fgts()
-                if "cndt" in self._keys:
-                    self.cndt()
-            else:
-                for key in self._keys:
-                    if key != "cadastro":
-                        self._result[key] = (
-                            "Situação cadastral diferente de ativa",
-                            "#FFFFFF",
-                        )
+                if key != "cadastro":
+                    self._result[key] = (
+                        "Situação cadastral diferente de ativa",
+                        "#FFFFFF",
+                    )
 
         return self._result
+
+    def close(self):
+        self._close = True
+        if self._browser:
+            self._browser.close()
+        self._camoufox.__exit__(None, None, None)
