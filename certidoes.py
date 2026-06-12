@@ -248,18 +248,21 @@ class Bot:
                 wait_until="domcontentloaded",
                 timeout=10000,
             )
-            if self._page.locator("button:has-text('Aceitar')").count():
-                accept = self._page.locator("button:has-text('Aceitar')")
+
             input_cnpj = self._page.locator("input[name='niContribuinte']")
             consulte = self._page.locator("button:has-text('Consultar')")
-
-            if accept:
-                self.move_mouse(accept, 5)
             self.move_mouse(input_cnpj, 25)
             self.type(input_cnpj)
+            if self._page.locator("button:has-text('Aceitar')").count():
+                accept = self._page.locator("button:has-text('Aceitar')")
+                self.move_mouse(accept, 5)
             self.move_mouse(consulte, 10)
 
-            self._page.wait_for_selector("button:has-text('Consultar')", timeout=5000)
+            if not self._page.locator("button:has-text('Consultar')").is_visible():
+                self._page.wait_for_selector("button:has-text('Aceitar')", timeout=5000)
+                accept = self._page.locator("button:has-text('Aceitar')")
+                self.move_mouse(accept, 5)
+            
             consulte = self._page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
