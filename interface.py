@@ -289,12 +289,15 @@ class App:
             self.checkbuttons[key].config(state="disabled")
 
         self.select_all_var.set(False)
+        self.entry.config(state="disabled")
         self.btn.config(text="Consultar Novamente")
         self.btn.config(command=self.reset_screen)
 
         self.show_main()
 
     def reset_screen(self):
+        self.entry.config(state="normal")
+        self.entry.focus_set()
         for key in self.keys:
             self.checkbuttons[key].config(
                 state=("disabled" if key in "cadastro" else "normal"),
