@@ -301,10 +301,12 @@ class App:
         self.entry.config(state="disabled")
         self.btn.config(text="Consultar Novamente")
         self.btn.config(command=self.reset_screen)
+        self.entry.unbind("<Return>")
+        self.entry.bind("<Return>", self.reset_screen)
 
         self.show_main()
 
-    def reset_screen(self):
+    def reset_screen(self, Event=None):
         self.entry.config(state="normal")
         self.entry.focus_set()
 
@@ -319,8 +321,9 @@ class App:
                 fg=("#808080" if key in "cadastro" else "white"),
                 # ("cadastro", "simples")
             )
-
         self.btn.config(text="Gerar Certidões", command=self.start_process)
+        self.entry.unbind("<Return>")
+        self.entry.bind("<Return>", self.start_process)
 
     def close(self):
         self._root.destroy()
