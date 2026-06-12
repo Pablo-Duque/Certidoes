@@ -34,7 +34,7 @@ class App:
         self._style()
 
         self._build_main()
-        self.entry.bind("<Return>", self.start_process)
+        self._root.bind("<Return>", self.start_process)
 
         self._build_loading()
 
@@ -86,10 +86,10 @@ class App:
         )
 
     def format_cnpj(self, *_):
-        value = self.cnpj_var.get()
+        value = self._cnpj_var.get()
 
         digits = "".join(filter(str.isdigit, value))[:14]
-        cursor_pos = self.entry.index(tk.INSERT)
+        cursor_pos = self._entry.index(tk.INSERT)
         was_at_end = cursor_pos == len(value)
 
         formatted = ""
@@ -104,43 +104,43 @@ class App:
         if len(digits) > 12:
             formatted += "-" + digits[12:14]
 
-        self.cnpj_var.trace_remove("write", self.trace_id)
-        self.cnpj_var.set(formatted)
-        self.trace_id = self.cnpj_var.trace_add("write", self.format_cnpj)
+        self._cnpj_var.trace_remove("write", self._trace_id)
+        self._cnpj_var.set(formatted)
+        self._trace_id = self._cnpj_var.trace_add("write", self.format_cnpj)
         if was_at_end:
-            self._root.after(1, lambda: self.entry.icursor("end"))
+            self._root.after(1, lambda: self._entry.icursor("end"))
 
     def toggle_all(self):
-        value = self.select_all_var.get()
+        value = self._select_all_var.get()
 
         for key in ("simples", "cnd", "fgts", "cndt"):
-            self.check_vars[key].set(value)
+            self._check_vars[key].set(value)
 
     def _build_main(self):
-        self.main = tk.Frame(self._root, bg="#0f1115")
+        self._main = tk.Frame(self._root, bg="#0f1115")
 
         tk.Label(
-            self.main,
+            self._main,
             text="CNPJ",
             fg="white",
             bg="#0f1115",
             font=("Segoe UI", 16, "bold"),
         ).pack(pady=(20, 10))
 
-        self.cnpj_var = tk.StringVar()
+        self._cnpj_var = tk.StringVar()
 
-        self.trace_id = self.cnpj_var.trace_add("write", self.format_cnpj)
+        self._trace_id = self._cnpj_var.trace_add("write", self.format_cnpj)
 
-        self.entry = ttk.Entry(
-            self.main,
-            textvariable=self.cnpj_var,
+        self._entry = ttk.Entry(
+            self._main,
+            textvariable=self._cnpj_var,
             justify="center",
             style="Entry.TEntry",
         )
-        self.entry.pack(ipadx=10, ipady=6)
-        self.entry.focus_set()
+        self._entry.pack(ipadx=10, ipady=6)
+        self._entry.focus_set()
 
-        self.check_vars = {
+        self._check_vars = {
             "cadastro": tk.BooleanVar(value=True),
             "simples": tk.BooleanVar(value=True),
             "cnd": tk.BooleanVar(value=False),
@@ -148,7 +148,7 @@ class App:
             "cndt": tk.BooleanVar(value=False),
         }
 
-        self.options_frame = tk.Frame(self.main, bg="#0f1115")
+        self.options_frame = tk.Frame(self._main, bg="#0f1115")
         self.options_frame.pack(pady=15)
 
         self.checkbuttons = {}
@@ -160,7 +160,7 @@ class App:
 
             chk = tk.Checkbutton(
                 row,
-                variable=self.check_vars[key],
+                variable=self._check_vars[key],
                 bg="#0f1115",
                 fg="white",
                 selectcolor="#0f1115",
@@ -184,14 +184,14 @@ class App:
             self.checkbuttons[key] = chk
             self.option_labels[key] = label
 
-        self.select_all_var = tk.BooleanVar()
+        self._select_all_var = tk.BooleanVar()
 
         row = tk.Frame(self.options_frame, bg="#0f1115")
         row.pack(anchor="w")
 
         tk.Checkbutton(
             row,
-            variable=self.select_all_var,
+            variable=self._select_all_var,
             command=self.toggle_all,
             bg="#0f1115",
             fg="white",
@@ -209,7 +209,7 @@ class App:
         ).pack(side="left")
 
         self.btn = ttk.Button(
-            self.main,
+            self._main,
             text="Gerar Certidões",
             command=self.start_process,
             style="Blue.TButton",
@@ -229,16 +229,16 @@ class App:
 
     def show_main(self):
         self.loading.pack_forget()
-        self.main.pack(fill="both", expand=True)
+        self._main.pack(fill="both", expand=True)
 
     def show_loading(self):
-        self.main.pack_forget()
+        self._main.pack_forget()
         self.loading.pack(fill="both", expand=True)
 
     def start_process(self, event=None):
-        cnpj = "".join(filter(str.isdigit, self.cnpj_var.get()))
+        cnpj = "".join(filter(str.isdigit, self._cnpj_var.get()))
 
-        selected_keys = [key for key, var in self.check_vars.items() if var.get()]
+        selected_keys = [key for key, var in self._check_vars.items() if var.get()]
 
         self.show_loading()
 
@@ -297,18 +297,18 @@ class App:
 
             self.checkbuttons[key].config(state="disabled")
 
-        self.select_all_var.set(False)
-        self.entry.config(state="disabled")
+        self._select_all_var.set(False)
+        self._entry.config(state="disabled")
         self.btn.config(text="Consultar Novamente")
         self.btn.config(command=self.reset_screen)
-        self.entry.unbind("<Return>")
-        self.entry.bind("<Return>", self.reset_screen)
+        self._root.unbind("<Return>")
+        self._root.bind("<Return>", self.reset_screen)
 
         self.show_main()
 
     def reset_screen(self, Event=None):
-        self.entry.config(state="normal")
-        self.entry.focus_set()
+        self._entry.config(state="normal")
+        self._entry.focus_set()
 
         for key in self._keys:
             self.checkbuttons[key].config(
@@ -322,8 +322,8 @@ class App:
                 # ("cadastro", "simples")
             )
         self.btn.config(text="Gerar Certidões", command=self.start_process)
-        self.entry.unbind("<Return>")
-        self.entry.bind("<Return>", self.start_process)
+        self._root.unbind("<Return>")
+        self._root.bind("<Return>", self.start_process)
 
     def close(self):
         self._root.destroy()
