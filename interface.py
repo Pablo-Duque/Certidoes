@@ -10,9 +10,9 @@ from certidoes import Bot
 
 class App:
     def __init__(self, root):
-        self.root = root
+        self._root = root
 
-        self.keys = [
+        self._keys = [
             "cadastro",
             "simples",
             "cnd",
@@ -20,7 +20,7 @@ class App:
             "cndt",
         ]
 
-        self.labels = {
+        self._labels = {
             "cadastro": "Situação Cadastral",
             "simples": "Simples",
             "cnd": "CND",
@@ -40,7 +40,7 @@ class App:
         self.show_main()
 
     def _config(self):
-        self.root.title("Certidões")
+        self._root.title("Certidões")
 
         if hasattr(sys, "_MEIPASS"):
             ico_path = os.path.join(sys._MEIPASS, "iconBy814anonimo.ico")
@@ -48,19 +48,19 @@ class App:
             ico_path = "./iconBy814anonimo.ico"
 
         if os.path.exists(ico_path):
-            self.root.iconbitmap(ico_path)
+            self._root.iconbitmap(ico_path)
 
-        self.root.configure(bg="#0f1115")
-        self.root.resizable(False, False)
+        self._root.configure(bg="#0f1115")
+        self._root.resizable(False, False)
 
     def _center(self, w, h):
-        sw = self.root.winfo_screenwidth()
-        sh = self.root.winfo_screenheight()
+        sw = self._root.winfo_screenwidth()
+        sh = self._root.winfo_screenheight()
 
         x = (sw // 2) - (w // 2)
         y = (sh // 2) - (h // 2)
 
-        self.root.geometry(f"{w}x{h}+{x}+{y}")
+        self._root.geometry(f"{w}x{h}+{x}+{y}")
 
     def _style(self):
         style = ttk.Style()
@@ -105,7 +105,7 @@ class App:
         self.cnpj_var.set(formatted)
         self.trace_id = self.cnpj_var.trace_add("write", self.format_cnpj)
         if was_at_end:
-            self.root.after(1, lambda: self.entry.icursor("end"))
+            self._root.after(1, lambda: self.entry.icursor("end"))
 
     def toggle_all(self):
         value = self.select_all_var.get()
@@ -114,7 +114,7 @@ class App:
             self.check_vars[key].set(value)
 
     def _build_main(self):
-        self.main = tk.Frame(self.root, bg="#0f1115")
+        self.main = tk.Frame(self._root, bg="#0f1115")
 
         tk.Label(
             self.main,
@@ -151,7 +151,7 @@ class App:
         self.checkbuttons = {}
         self.option_labels = {}
 
-        for key in self.keys:
+        for key in self._keys:
             row = tk.Frame(self.options_frame, bg="#0f1115")
             row.pack(anchor="w")
 
@@ -169,7 +169,7 @@ class App:
 
             label = tk.Label(
                 row,
-                text=self.labels[key],
+                text=self._labels[key],
                 fg=("#808080" if key in "cadastro" else "white"),
                 # ("cadastro", "simples")
                 bg="#0f1115",
@@ -214,7 +214,7 @@ class App:
         self.btn.pack(pady=15)
 
     def _build_loading(self):
-        self.loading = tk.Frame(self.root, bg="#0f1115")
+        self.loading = tk.Frame(self._root, bg="#0f1115")
 
         tk.Label(
             self.loading,
@@ -250,29 +250,29 @@ class App:
 
         result = bot.search()
 
-        self.root.after(0, lambda: self.finish(result))
+        self._root.after(0, lambda: self.finish(result))
 
     def set_result(self, key, text, color):
         if key in self.result_labels:
             self.result_labels[key].config(text=text, fg=color)
 
     def apply_result(self, result):
-        for key in self.keys:
+        for key in self._keys:
             if key not in result:
-                self.set_result(key, f"{self.labels[key]}: Não selecionado", "#FFFFFF")
+                self.set_result(key, f"{self._labels[key]}: Não selecionado", "#FFFFFF")
 
             elif result[key] is None:
                 self.set_result(
-                    key, f"{self.labels[key]}: Erro de atribuição", "#FC1B1B"
+                    key, f"{self._labels[key]}: Erro de atribuição", "#FC1B1B"
                 )
 
             else:
                 text, color = result[key]
 
-                self.set_result(key, f"{self.labels[key]}: {text}", color)
+                self.set_result(key, f"{self._labels[key]}: {text}", color)
 
     def finish(self, result):
-        for key in self.keys:
+        for key in self._keys:
             if key not in result:
                 text = "Não selecionado"
                 color = "#FFFFFF"
@@ -284,7 +284,7 @@ class App:
             else:
                 text, color = result[key]
 
-            self.option_labels[key].config(text=f"{self.labels[key]}: {text}", fg=color)
+            self.option_labels[key].config(text=f"{self._labels[key]}: {text}", fg=color)
 
             self.checkbuttons[key].config(state="disabled")
 
@@ -298,7 +298,7 @@ class App:
     def reset_screen(self):
         self.entry.config(state="normal")
         self.entry.focus_set()
-        for key in self.keys:
+        for key in self._keys:
             self.checkbuttons[key].config(
                 state=("disabled" if key in "cadastro" else "normal"),
                 # ("cadastro", "simples")
