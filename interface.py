@@ -296,13 +296,15 @@ class App:
 
     def reset_screen(self):
         for key in self.keys:
-            self.option_labels[key].config(
-                text=self.labels[key],
-                fg=("#808080" if key in ("cadastro", "simples") else "white"),
+            self.checkbuttons[key].config(
+                state=("disabled" if key in "cadastro" else "normal"),
+                # ("cadastro", "simples")
             )
 
-            self.checkbuttons[key].config(
-                state=("disabled" if key in ("cadastro", "simples") else "normal")
+            self.option_labels[key].config(
+                text=self._labels[key],
+                fg=("#808080" if key in "cadastro" else "white"),
+                # ("cadastro", "simples")
             )
 
         self.btn.config(text="Gerar Certidões", command=self.start_process)
