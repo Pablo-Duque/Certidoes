@@ -19,6 +19,7 @@ Este projeto tem finalidade de automação e auxílio operacional, não substitu
 ## ✨ Funcionalidades 
 
 * Consulta da situação cadastral da empresa através do CNPJ informado.
+* Escolha entre certidões
 * Validação prévia da situação cadastral antes da execução das demais consultas.
 * Verificação do enquadramento no Simples Nacional.
 * Consulta da Certidão Negativa de Débitos (CND).
@@ -30,10 +31,11 @@ Este projeto tem finalidade de automação e auxílio operacional, não substitu
 ## 🔄 Como funciona 
 
 1. Informe o CNPJ na interface.
-2. O sistema consulta a situação cadastral da empresa.
-3. Caso a empresa esteja ativa, as demais verificações são iniciadas automaticamente.
-4. Os resultados são exibidos na tela.
-5. Os documentos encontrados são baixados para armazenamento local.
+2. Selecione as certidões que quiser
+3. O sistema consulta a situação cadastral da empresa.
+4. Caso a empresa esteja ativa, as demais verificações são iniciadas automaticamente.
+5. Os resultados são exibidos na tela.
+6. Os documentos encontrados são baixados para armazenamento local.
 
 ## 🛠️ Tecnologias utilizadas 
 
@@ -41,6 +43,7 @@ Este projeto tem finalidade de automação e auxílio operacional, não substitu
 * Tkinter
 * Camoufox
 * Web Scraping
+* Thread
 
 ## 📦 Instalação
 
