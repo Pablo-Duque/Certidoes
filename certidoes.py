@@ -325,14 +325,14 @@ class Bot:
             self._page.wait_for_load_state("domcontentloaded", timeout=10000)
             # if self._page.locator(".feedback-text").count():
             self._page.wait_for_selector(".feedback-text", timeout=5000)
-            status = self._page.locator(".feedback-text").inner_text()
-            if "nao encontrado" in self.remove_accent(status.lower()):
+            status = self._page.locator(".feedback-text").inner_text().lower()
+            if "nao encontrado" in self.remove_accent(status):
                 self._result["fgts"] = ("Não encontrado", "#FC1B1B")
-            elif "informacoes disponiveis nao sao suficientes" in self.remove_accent(
-                status.lower()
+            elif "irregular" in self.remove_accent(
+                status
             ):
-                self._result["fgts"] = ("Informações insuficientes", "#FC1B1B")
-            elif "esta regular" in self.remove_accent(status.lower()):
+                self._result["fgts"] = ("Irregular", "#FC1B1B")
+            elif "esta regular" in self.remove_accent(status):
                 self._result["fgts"] = ("Regular", "#00ff37")
                 link = self._page.locator("a:has-text('Certificado de Regularidade')")
                 self.move_mouse(link, 3)
@@ -345,7 +345,7 @@ class Bot:
                 self.print_screen("FGTS")
             else:
                 self.print_screen("FGTS")
-                self._result["fgts"] = ("Irregular", "#FC1B1B")
+                self._result["fgts"] = (status[:70], "#FC1B1B")
 
         except Exception as e:
             print(e)
