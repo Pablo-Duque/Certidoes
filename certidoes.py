@@ -345,7 +345,7 @@ class Bot:
                 self.print_screen("FGTS")
             else:
                 self.print_screen("FGTS")
-                self._result["fgts"] = (status[:70], "#FC1B1B")
+                self._result["fgts"] = (status[:56].capitalize(), "#FC1B1B")
 
         except Exception as e:
             print(e)
