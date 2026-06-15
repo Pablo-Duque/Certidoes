@@ -326,9 +326,9 @@ class Bot:
             self.move_mouse(consulte, 10)
 
             self._page.wait_for_load_state("domcontentloaded", timeout=10000)
-            # if self._page.locator(".feedback-text").count():
+
             self._page.wait_for_selector(".feedback-text", timeout=5000)
-            status = self._page.locator(".feedback-text").inner_text().lower()
+            status = self._page.locator(".feedback-text").nth(0).inner_text().lower()
             if "nao encontrado" in self.remove_accent(status):
                 self._result["fgts"] = ("Não encontrado", "#FC1B1B")
             elif "irregular" in self.remove_accent(
@@ -336,20 +336,28 @@ class Bot:
             ):
                 self._result["fgts"] = ("Irregular", "#FC1B1B")
             elif "esta regular" in self.remove_accent(status):
-                self._result["fgts"] = ("Regular", "#00ff37")
-                link = self._page.locator("a:has-text('Certificado de Regularidade')")
-                self.move_mouse(link, 3)
-                self._page.wait_for_selector(
-                    "input:has-text('Visualizar')", timeout=5000
-                )
-                view = self._page.locator("input:has-text('Visualizar')")
-                self.move_mouse(view)
-                self._page.wait_for_selector("input:has-text('Imprimir')", timeout=5000)
+                if "pgfn" in self.remove_accent(status):
+                    if self._page.locator(".feedback-text").nth(1).count():
+                        status2 = self._page.locator(".feedback-text").nth(1).inner_text().lower()
+                        self._result["fgts"] = (f"Regular na PGFN e {status2[:29]}.", "#FC1B1B")
+                    else:
+                        self._result["fgts"] = ("Regular na PGFN", "#00ff37")              
+                else:    
+                    self._result["fgts"] = ("Regular", "#00ff37")
+                    if self._page.locator("a:has-text('Certificado de Regularidade')").count():
+                        link = self._page.locator("a:has-text('Certificado de Regularidade')")
+                        self.move_mouse(link, 3)
+                        self._page.wait_for_selector(
+                            "input:has-text('Visualizar')", timeout=5000
+                        )
+                        view = self._page.locator("input:has-text('Visualizar')")
+                        self.move_mouse(view)
+                        self._page.wait_for_selector("input:has-text('Imprimir')", timeout=5000)
                 self.print_screen("FGTS")
             else:
                 self.print_screen("FGTS")
                 self._result["fgts"] = (status[:56].capitalize(), "#FC1B1B")
-
+                
         except Exception as e:
             print(e)
             self.print_screen("Erro FGTS")
