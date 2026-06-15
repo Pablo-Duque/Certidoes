@@ -297,7 +297,6 @@ class App:
 
             self.checkbuttons[key].config(state="disabled")
 
-        self._select_all_var.set(False)
         self._entry.config(state="disabled")
         self.btn.config(text="Consultar Novamente")
         self.btn.config(command=self.reset_screen)
