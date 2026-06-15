@@ -88,8 +88,8 @@ class Bot:
             path.mkdir(parents=True, exist_ok=True)
             with self._page.expect_download(timeout=1500) as download_info:
                 self.move_mouse(download_btn, 2)
-                download = download_info.value
-                download.save_as(f"{path}/{name}.pdf")
+            download = download_info.value
+            download.save_as(f"{path}/{name}.pdf")
         except Exception:
             return
 
@@ -187,8 +187,8 @@ class Bot:
                 with self._page.context.expect_page() as popup_info:
                     self.move_mouse(print_btn, 10)
                     popup = popup_info.value
-                    popup.wait_for_load_state()
-                    self.print_screen("Cadastro", page=popup)
+                popup.wait_for_load_state()
+                self.print_screen("Cadastro", page=popup)
             else:
                 self._result["cadastro"] = (status, "#00ff37")
 
