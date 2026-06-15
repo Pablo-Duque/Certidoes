@@ -387,25 +387,29 @@ class Bot:
                 pdf = reader.pages[0]
                 title = pdf.extract_text().splitlines()[0].strip().capitalize()
                 if "negativa" in title.lower():
-                    self._result["cndt"] = ("Negativa", "#00ff37")
                     if "positiva" in title.lower():
                         self._result["cndt"] = (
                             "Positiva com efeitos de negativa",
                             "#00ff37",
                         )
+                    else:
+                        self._result["cndt"] = ("Negativa", "#00ff37")
                 else:
                     self._result["cndt"] = ("Positiva", "#FC1B1B")
             else:
                 if self._page.locator("#mensagens").count():
+                    message = self._page.locator("#mensagens").inner_text().lower()
                     if (
                         "código de validação"
-                        in self._page.locator("#mensagens").inner_text().lower()
+                        in message
                     ):
                         self.cndt(attempt + 1)
+                    else:
+                        self._result["cndt"] = (message, "#FC1B1B")
                 else:
                     self.print_screen("Erro CNDT")
                     self._result["cndt"] = ("Erro no download", "#FC1B1B")
-
+                    
         except Exception as e:
             print(e)
             self.print_screen("Erro CNDT")
