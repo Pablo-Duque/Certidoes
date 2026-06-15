@@ -25,7 +25,8 @@ class Bot:
         self._close = False
 
         self._date = datetime.now().strftime("%Y/%m/%d")
-
+        
+        start = datetime.now()
         self._camoufox = Camoufox(
             headless=True,
             humanize=False,
@@ -48,6 +49,8 @@ class Bot:
                 "height": 768,
             }
         )
+        end = datetime.now()
+        print(f"Tempo de criação: {end - start}")
 
     def move_mouse(self, box, margin=10):
         bounding = box.bounding_box()
@@ -424,7 +427,8 @@ class Bot:
         self._cnpj = cnpj
         self._keys = keys
         self._result = {key: None for key in self._keys}
-
+        
+        start = datetime.now()
         self.cadastro()
         if self._proceed and not self._close:
             if "simples" in self._keys and not self._close:
@@ -442,7 +446,9 @@ class Bot:
                         "Situação cadastral diferente de ativa",
                         "#FFFFFF",
                     )
-
+        end = datetime.now()
+        print(f"Tempo de pesquisa: {end - start}")
+        
         return self._result
 
     def close(self):
