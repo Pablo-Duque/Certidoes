@@ -142,7 +142,11 @@ class Bot:
             self.type(input_cnpj)
             checkbox = frame.locator("#checkbox")
             self.move_mouse(checkbox, 20)
-            expect(checkbox).to_have_attribute("aria-checked", "true", timeout=5000)
+            try:
+                expect(checkbox).to_have_attribute("aria-checked", "true", timeout=5000)
+            except Exception:
+                self._result["cadastro"] = ("Não passou no captcha", "#FC1B1B")
+                return           
             consulte = self._page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
@@ -369,7 +373,7 @@ class Bot:
     def cndt(self, attempt=0):
         try:
             if attempt == 6:
-                self._result["cndt"] = ("Não passou o captcha", "#FC1B1B")
+                self._result["cndt"] = ("Não passou no captcha", "#FC1B1B")
                 return
 
             self._page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
