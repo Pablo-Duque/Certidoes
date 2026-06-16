@@ -43,7 +43,7 @@ Este projeto tem finalidade de automação e auxílio operacional, não substitu
 * Tkinter
 * Camoufox
 * Web Scraping
-* Thread
+* Worker
 
 ## 📦 Instalação
 
