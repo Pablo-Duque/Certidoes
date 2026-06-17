@@ -273,8 +273,13 @@ class Bot:
             pdf_btn = frame.locator("button:has-text('Gerar PDF')")
 
             if self._name is None:
-                name = frame.locator(".panel-body .spanValorVerde").nth(1).inner_text()
-                self._name = re.sub(r'[\\/*?:"<>|]', "", name).strip()
+                name = (
+                    frame.locator(".panel-body .spanValorVerde")
+                    .nth(1)
+                    .inner_text()
+                    .strip
+                )
+                self._name = re.sub(r'[\\/*?:"<>|]', "", name)
                 self._path = self._path / self._name
             self.download(pdf_btn, "Simples")
 
