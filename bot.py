@@ -168,22 +168,6 @@ class Bot:
                 .strip()
             )
             self._uf = uf
-            code = (
-                self._page.locator(
-                    "div.section-title:has-text('CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA') + div.section-data"
-                )
-                .first.inner_text()
-                .strip()
-                .capitalize()
-            )
-            if code[0] == "1":
-                complement = "Administração Pública"
-            elif code[0] == "3":
-                complement = "Entidades sem Fins Lucrativos"
-            elif "412-0" in code:
-                complement = "Produtor Rural"
-            else:
-                complement = None
             status = (
                 self._page.locator(
                     "div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data"
@@ -213,6 +197,23 @@ class Bot:
                 popup.wait_for_load_state()
                 self.print_screen("Cadastro", page=popup)
             else:
+                code = (
+                    self._page.locator(
+                        "div.section-title:has-text('CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA') + div.section-data"
+                    )
+                    .first.inner_text()
+                    .strip()
+                    .capitalize()
+                )
+                if code[0] == "1":
+                    complement = "Administração Pública"
+                elif code[0] == "3":
+                    complement = "Entidades sem Fins Lucrativos"
+                elif "412-0" in code:
+                    complement = "Produtor Rural"
+                else:
+                    complement = None
+                    
                 if complement is None:
                     self._result["cadastro"] = (status, "#00ff37")
                 else:
