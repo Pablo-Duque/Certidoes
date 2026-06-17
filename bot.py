@@ -101,9 +101,11 @@ class Bot:
             return
 
     def print_screen(self, name, path=None, page=None):
+        if self._name is None:
+            self._name = self._cnpj
+            self._path = self._path / self._name
         if path is None:
             path = self._path
-
         if page is None:
             page = self._page
 
