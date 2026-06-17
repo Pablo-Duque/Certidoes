@@ -215,6 +215,10 @@ class Bot:
                     complement = "Administração Pública"
                 elif code[0] == "3":
                     complement = "Sem Fins Lucrativos"
+                elif "201-1" in code:
+                    complement = "Empresa Pública"
+                elif "203-8" in code:
+                    complement = "Sociedade de Economia Mista"
                 elif "412-0" in code:
                     complement = "Produtor Rural"
                 else:
