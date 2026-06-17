@@ -25,7 +25,7 @@ class Bot:
         self._close = False
 
         self._date = datetime.now().strftime("%Y/%m/%d")
-        
+
         start = datetime.now()
         self._camoufox = Camoufox(
             headless=True,
@@ -146,7 +146,7 @@ class Bot:
                 expect(checkbox).to_have_attribute("aria-checked", "true", timeout=5000)
             except Exception:
                 self._result["cadastro"] = ("Não passou no captcha", "#FC1B1B")
-                return           
+                return
             consulte = self._page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
@@ -168,6 +168,22 @@ class Bot:
                 .strip()
             )
             self._uf = uf
+            code = (
+                self._page.locator(
+                    "div.section-title:has-text('CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA') + div.section-data"
+                )
+                .first.inner_text()
+                .strip()
+                .capitalize()
+            )
+            if code[0] == "1":
+                complement = "Administração Pública"
+            elif code[0] == "3":
+                complement = "Entidades sem Fins Lucrativos"
+            elif "412-0" in code:
+                complement = "Produtor Rural"
+            else:
+                complement = None
             status = (
                 self._page.locator(
                     "div.section-title:has-text('SITUAÇÃO CADASTRAL') + div.section-data"
@@ -197,7 +213,13 @@ class Bot:
                 popup.wait_for_load_state()
                 self.print_screen("Cadastro", page=popup)
             else:
-                self._result["cadastro"] = (status, "#00ff37")
+                if complement is None:
+                    self._result["cadastro"] = (status, "#00ff37")
+                else:
+                    self._result["cadastro"] = (
+                        f"{status} - {complement} ({code[:5]})",
+                        "#00ff37",
+                    )
 
         except Exception as e:
             print(e)
@@ -269,7 +291,7 @@ class Bot:
                 self._page.wait_for_selector("button:has-text('Aceitar')", timeout=5000)
                 accept = self._page.locator("button:has-text('Aceitar')")
                 self.move_mouse(accept, 5)
-            
+
             consulte = self._page.locator("button:has-text('Consultar')")
             self.move_mouse(consulte, 10)
 
@@ -335,33 +357,45 @@ class Bot:
             status = self._page.locator(".feedback-text").nth(0).inner_text().lower()
             if "nao encontrado" in self.remove_accent(status):
                 self._result["fgts"] = ("Não encontrado", "#FC1B1B")
-            elif "irregular" in self.remove_accent(
-                status
-            ):
+            elif "irregular" in self.remove_accent(status):
                 self._result["fgts"] = ("Irregular", "#FC1B1B")
             elif "esta regular" in self.remove_accent(status):
                 if "pgfn" in self.remove_accent(status):
                     if self._page.locator(".feedback-text").nth(1).count():
-                        status2 = self._page.locator(".feedback-text").nth(1).inner_text().lower()
-                        self._result["fgts"] = (f"Regular na PGFN e {status2[:29]}.", "#FC1B1B")
+                        status2 = (
+                            self._page.locator(".feedback-text")
+                            .nth(1)
+                            .inner_text()
+                            .lower()
+                        )
+                        self._result["fgts"] = (
+                            f"Regular na PGFN e {status2[:29]}.",
+                            "#FC1B1B",
+                        )
                     else:
-                        self._result["fgts"] = ("Regular na PGFN", "#00ff37")              
-                else:    
+                        self._result["fgts"] = ("Regular na PGFN", "#00ff37")
+                else:
                     self._result["fgts"] = ("Regular", "#00ff37")
-                    if self._page.locator("a:has-text('Certificado de Regularidade')").count():
-                        link = self._page.locator("a:has-text('Certificado de Regularidade')")
+                    if self._page.locator(
+                        "a:has-text('Certificado de Regularidade')"
+                    ).count():
+                        link = self._page.locator(
+                            "a:has-text('Certificado de Regularidade')"
+                        )
                         self.move_mouse(link, 3)
                         self._page.wait_for_selector(
                             "input:has-text('Visualizar')", timeout=5000
                         )
                         view = self._page.locator("input:has-text('Visualizar')")
                         self.move_mouse(view)
-                        self._page.wait_for_selector("input:has-text('Imprimir')", timeout=5000)
+                        self._page.wait_for_selector(
+                            "input:has-text('Imprimir')", timeout=5000
+                        )
                 self.print_screen("FGTS")
             else:
                 self.print_screen("FGTS")
                 self._result["fgts"] = (status[:56].capitalize(), "#FC1B1B")
-                
+
         except Exception as e:
             print(e)
             self.print_screen("Erro FGTS")
@@ -414,17 +448,14 @@ class Bot:
             else:
                 if self._page.locator("#mensagens").count():
                     message = self._page.locator("#mensagens").inner_text().lower()
-                    if (
-                        "código de validação"
-                        in message
-                    ):
+                    if "código de validação" in message:
                         self.cndt(attempt + 1)
                     else:
                         self._result["cndt"] = (message, "#FC1B1B")
                 else:
                     self.print_screen("Erro CNDT")
                     self._result["cndt"] = ("Erro no download", "#FC1B1B")
-                    
+
         except Exception as e:
             print(e)
             self.print_screen("Erro CNDT")
@@ -439,7 +470,7 @@ class Bot:
         self._cnpj = cnpj
         self._keys = keys
         self._result = {key: None for key in self._keys}
-        
+
         start = datetime.now()
         self.cadastro()
         if self._proceed and not self._close:
@@ -460,7 +491,7 @@ class Bot:
                     )
         end = datetime.now()
         print(f"Tempo de pesquisa: {end - start}")
-        
+
         return self._result
 
     def close(self):
