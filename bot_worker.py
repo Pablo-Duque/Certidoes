@@ -47,7 +47,7 @@ class BotWorker:
         self._thread.join()
 
     def _worker_loop(self):
-        from certidoes import Bot
+        from bot import Bot
 
         self._bot = Bot()
         while self._running:
