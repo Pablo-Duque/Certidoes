@@ -21,7 +21,8 @@ class Bot:
         self._cnpj = None
         self._keys = None
         self._path = None
-        self._uf = None
+        self._name = None
+        self._uf = "SP"
         self._close = False
 
         self._date = datetime.now().strftime("%Y/%m/%d")
@@ -85,6 +86,9 @@ class Bot:
         )
 
     def download(self, download_btn, name, path=None):
+        if self._name is None:
+            self._name = self._cnpj
+            self._path = self._path / self._name
         if path is None:
             path = self._path
         try:
@@ -157,8 +161,8 @@ class Bot:
                 .first.inner_text()
                 .strip()
             )
-            name = re.sub(r'[\\/*?:"<>|]', "", name)
-            self._path = self._path / name
+            self._name = re.sub(r'[\\/*?:"<>|]', "", name)
+            self._path = self._path / self._name
 
             uf = (
                 self._page.locator(
@@ -261,6 +265,11 @@ class Bot:
                 self._result["simples"] = ("Optante", "#00ff37")
 
             pdf_btn = frame.locator("button:has-text('Gerar PDF')")
+
+            if self._name is None:
+                name = frame.locator(".panel-body .spanValorVerde").nth(1).inner_text()
+                self._name = re.sub(r'[\\/*?:"<>|]', "", name).strip()
+                self._path = self._path / self._name
             self.download(pdf_btn, "Simples")
 
         except Exception as e:
