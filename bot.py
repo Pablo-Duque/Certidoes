@@ -18,14 +18,8 @@ from pypdf import PdfReader
 
 class Bot:
     def __init__(self):
-        self._cnpj = None
-        self._keys = None
-        self._path = None
-        self._name = None
-        self._uf = "SP"
-        self._close = False
-
         self._date = datetime.now().strftime("%Y/%m/%d")
+        self._close = False
 
         start = datetime.now()
         self._camoufox = Camoufox(
@@ -277,7 +271,7 @@ class Bot:
                     frame.locator(".panel-body .spanValorVerde")
                     .nth(1)
                     .inner_text()
-                    .strip
+                    .strip()
                 )
                 self._name = re.sub(r'[\\/*?:"<>|]', "", name)
                 self._path = self._path / self._name
@@ -487,24 +481,25 @@ class Bot:
 
     def search(self, cnpj, keys):
         self._path = Path.home() / "Downloads" / "Certidoes"  # / self._date
-        self._proceed = True
         self._cnpj = cnpj
-        self._keys = keys
-        self._result = {key: None for key in self._keys}
+        self._name = None
+        self._proceed = True
+        self._uf = "SP"
+        self._result = {key: None for key in keys}
 
         start = datetime.now()
         self.cadastro()
         if self._proceed and not self._close:
-            if "simples" in self._keys and not self._close:
+            if "simples" in keys and not self._close:
                 self.simples()
-            if "cnd" in self._keys and not self._close:
+            if "cnd" in keys and not self._close:
                 self.cnd()
-            if "fgts" in self._keys and not self._close:
+            if "fgts" in keys and not self._close:
                 self.fgts()
-            if "cndt" in self._keys and not self._close:
+            if "cndt" in keys and not self._close:
                 self.cndt()
         else:
-            for key in self._keys:
+            for key in keys:
                 if key != "cadastro":
                     self._result[key] = (
                         "Situação cadastral diferente de ativa",
