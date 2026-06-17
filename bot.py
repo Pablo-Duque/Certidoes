@@ -223,7 +223,7 @@ class Bot:
                     complement = "Produtor Rural"
                 else:
                     complement = None
-                    
+
                 if complement is None:
                     self._result["cadastro"] = (status, "#00ff37")
                 else:
@@ -233,7 +233,7 @@ class Bot:
                     )
 
         except Exception as e:
-            print(e)
+            print(f"Cadastro: {e}")
             self.print_screen("Erro Cadastro")
             if "timeout" in str(e).lower():
                 self._result["cadastro"] = ("Página não respondeu", "#FC1B1B")
@@ -284,7 +284,7 @@ class Bot:
             self.download(pdf_btn, "Simples")
 
         except Exception as e:
-            print(e)
+            print(f"Simples: {e}")
             self.print_screen("Erro Simples")
             if "timeout" in str(e).lower():
                 self._result["simples"] = ("Página não respondeu", "#FC1B1B")
@@ -347,7 +347,7 @@ class Bot:
                 )
 
         except Exception as e:
-            print(e)
+            print(f"CND: {e}")
             self.print_screen("Erro CND")
             if "timeout" in str(e).lower():
                 self._result["cnd"] = ("Página não respondeu", "#FC1B1B")
@@ -390,7 +390,7 @@ class Bot:
                             .lower()
                         )
                         self._result["fgts"] = (
-                            f"Regular na PGFN e {status2[:29]}.",
+                            f"Regular na PGFN e {status2[:29]}",
                             "#FC1B1B",
                         )
                     else:
@@ -418,7 +418,7 @@ class Bot:
                 self._result["fgts"] = (status[:56].capitalize(), "#FC1B1B")
 
         except Exception as e:
-            print(e)
+            print(f"FGTS: {e}")
             self.print_screen("Erro FGTS")
             if "timeout" in str(e).lower():
                 self._result["fgts"] = ("Página não respondeu", "#FC1B1B")
@@ -478,7 +478,7 @@ class Bot:
                     self._result["cndt"] = ("Erro no download", "#FC1B1B")
 
         except Exception as e:
-            print(e)
+            print(f"CNDT: {e}")
             self.print_screen("Erro CNDT")
             if "timeout" in str(e).lower():
                 self._result["cndt"] = ("Página não respondeu", "#FC1B1B")
