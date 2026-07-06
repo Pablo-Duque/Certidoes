@@ -449,7 +449,10 @@ class Bot:
             if path_test.exists():
                 reader = PdfReader(self._path / "CNDT.pdf")
                 pdf = reader.pages[0]
-                title = pdf.extract_text().splitlines()[0].strip().capitalize()
+                title = (
+                    pdf.extract_text().splitlines()[0].strip().capitalize()
+                    + pdf.extract_text().splitlines()[1].strip().capitalize()
+                )
                 if "negativa" in title.lower():
                     if "positiva" in title.lower():
                         self._result["cndt"] = (
