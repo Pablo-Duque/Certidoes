@@ -87,7 +87,7 @@ class Bot:
             path = self._path
         try:
             path.mkdir(parents=True, exist_ok=True)
-            with self._page.expect_download(timeout=1500) as download_info:
+            with self._page.expect_download(timeout=3000) as download_info:
                 self.move_mouse(download_btn, 2)
             download = download_info.value
             download.save_as(f"{path}/{name}.pdf")
