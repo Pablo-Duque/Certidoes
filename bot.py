@@ -11,14 +11,15 @@ import cv2
 import ddddocr
 import numpy as np
 from camoufox.sync_api import Camoufox
-from playwright.sync_api import expect
 from PIL import Image
+from playwright.sync_api import expect
 from pypdf import PdfReader
 
 
 class Bot:
     def __init__(self):
-        self._date = datetime.now().strftime("%Y/%m/%d")
+        # self._date = datetime.now().strftime("%Y/%m/%d")
+        self._date = datetime.now().strftime("%d")
         self._close = False
 
         start = datetime.now()
@@ -426,22 +427,48 @@ class Bot:
                 return
 
             self._page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
-            self._page.wait_for_selector("input[value='Emitir Certidão']", timeout=5000)
-            issue1 = self._page.locator("input[value='Emitir Certidão']")
+
+            text1 = self._page.get_by_text(
+                "Emitir Certidão",
+                exact=False
+            )
+            button1 = self._page.locator(
+                "input[value*='Emitir Certidão']"
+            )
+            issue1 = text1.or_(button1).first
+            issue1.wait_for(
+                state="visible",
+                timeout=5000
+            )
+
             self.move_mouse(issue1, 5)
 
-            self._page.wait_for_selector("#gerarCertidaoForm\\:cpfCnpj", timeout=5000)
-            input_cnpj = self._page.locator("#gerarCertidaoForm\\:cpfCnpj")
+            self._page.wait_for_selector("#cpfCnpj", timeout=5000)
+            input_cnpj = self._page.locator("#cpfCnpj")
             self.move_mouse(input_cnpj, 15)
             self.type(input_cnpj)
 
-            captcha_result = self.solve_captcha("#idImgBase64")
-            input_captcha = self._page.locator("#idCampoResposta")
+            captcha_result = self.solve_captcha("img[src^='data:image']")
+            input_captcha = self._page.locator(
+                "[id*='resposta'], "
+                "[class*='resposta'], "
+                "[name*='resposta']"
+            ).first
             self.move_mouse(input_captcha, 15)
             self.type(input_captcha, captcha_result)
 
-            self._page.wait_for_selector("input[value='Emitir Certidão']", timeout=5000)
-            issue2 = self._page.locator("input[value='Emitir Certidão']")
+            text2  = self._page.get_by_text(
+                "Emitir Certidão",
+                exact=False
+            )
+            button2 = self._page.locator(
+                "input[value*='Emitir Certidão']"
+            )
+            issue2 = text2.or_(button2).first
+            issue2.wait_for(
+                state="visible",
+                timeout=5000
+            )
 
             self.download(issue2, "CNDT")
 
@@ -483,7 +510,7 @@ class Bot:
                 self._result["cndt"] = ("Erro no software", "#FC1B1B")
 
     def search(self, cnpj, keys):
-        self._path = Path.home() / "Downloads" / "Certidoes"  # / self._date
+        self._path = Path.home() / "Downloads" / "Certidoes" / self._date
         self._cnpj = cnpj
         self._name = None
         self._proceed = True
