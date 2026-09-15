@@ -493,7 +493,7 @@ class Bot:
             else:
                 if self._page.locator("#mensagens").count():
                     message = self._page.locator("#mensagens").inner_text().lower()
-                    if "código de validação" in message:
+                    if "código de validação" in message or message == "":
                         self.cndt(attempt + 1)
                     else:
                         self._result["cndt"] = (message, "#FC1B1B")
