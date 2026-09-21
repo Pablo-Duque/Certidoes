@@ -428,18 +428,10 @@ class Bot:
 
             self._page.goto("https://cndt-certidao.tst.jus.br/inicio.faces")
 
-            text1 = self._page.get_by_text(
-                "Emitir Certidão",
-                exact=False
-            )
-            button1 = self._page.locator(
-                "input[value*='Emitir Certidão']"
-            )
+            text1 = self._page.get_by_text("Emitir Certidão", exact=False)
+            button1 = self._page.locator("input[value*='Emitir Certidão']")
             issue1 = text1.or_(button1).first
-            issue1.wait_for(
-                state="visible",
-                timeout=5000
-            )
+            issue1.wait_for(state="visible", timeout=5000)
 
             self.move_mouse(issue1, 5)
 
@@ -450,25 +442,15 @@ class Bot:
 
             captcha_result = self.solve_captcha("img[src^='data:image']")
             input_captcha = self._page.locator(
-                "[id*='resposta'], "
-                "[class*='resposta'], "
-                "[name*='resposta']"
+                "[id*='resposta'], [class*='resposta'], [name*='resposta']"
             ).first
             self.move_mouse(input_captcha, 15)
             self.type(input_captcha, captcha_result)
 
-            text2  = self._page.get_by_text(
-                "Emitir Certidão",
-                exact=False
-            )
-            button2 = self._page.locator(
-                "input[value*='Emitir Certidão']"
-            )
+            text2 = self._page.get_by_text("Emitir Certidão", exact=False)
+            button2 = self._page.locator("input[value*='Emitir Certidão']")
             issue2 = text2.or_(button2).first
-            issue2.wait_for(
-                state="visible",
-                timeout=5000
-            )
+            issue2.wait_for(state="visible", timeout=5000)
 
             self.download(issue2, "CNDT")
 
@@ -493,7 +475,11 @@ class Bot:
             else:
                 if self._page.locator("#mensagens").count():
                     message = self._page.locator("#mensagens").inner_text().lower()
-                    if "código de validação" in message or message == "":
+                    if (
+                        "código de validação" in message
+                        or "resposta" in message
+                        or message == ""
+                    ):
                         self.cndt(attempt + 1)
                     else:
                         self._result["cndt"] = (message, "#FC1B1B")
