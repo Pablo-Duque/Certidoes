@@ -113,7 +113,7 @@ class App:
     def toggle_all(self):
         value = self._select_all_var.get()
 
-        for key in ("simples", "cnd", "fgts", "cndt"):
+        for key in self._keys:
             self._check_vars[key].set(value)
 
     def _build_main(self):
